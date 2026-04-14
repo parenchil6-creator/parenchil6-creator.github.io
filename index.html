@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="tt.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Mining Adventure 2D - Optimized Edition</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --ui-bg: rgba(20, 20, 20, 0.85);
+            --text-main: #f0f0f0;
+            --accent: #4fc3f7;
+            --accent-hover: #29b6f6;
+            --diamond: #00e5ff;
+            /* Раритетности петов */
+            --rarity-common: #b0bec5;
+            --rarity-rare: #42a5f5;
+            --rarity-epic: #ab47bc;
+            --rarity-mythic: #ef5350;
+            --rarity-legendary: #ffca28;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            font-family: 'Segoe UI', 'Segoe UI Emoji', 'Apple Color Emoji', Tahoma, sans-serif;
+            margin: 0; padding: 0;
+        }
+        body, html { width: 100vw; height: 100vh; background-color: var(--bg-color); overflow: hidden; }
+        canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; touch-action: none; }
+
+        /* UI Elements */
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+        .hud { padding: 15px; display: flex; justify-content: space-between; pointer-events: auto; }
+        .stats { background: var(--ui-bg); padding: 10px 20px; border-radius: 8px; color: var(--text-main); border: 2px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-wrap: wrap; gap: 15px; font-weight: bold; align-items: center; }
+        .stat-item { display: flex; align-items: center; gap: 8px; }
+
+        .top-buttons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+        .btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; pointer-events: auto; font-size: 16px; text-transform: uppercase; }
+        .btn:hover { background: var(--accent-hover); transform: scale(1.05); }
+        .btn:active { transform: scale(0.95); }
+        .btn:disabled { background: #555 !important; color: #888 !important; cursor: not-allowed; transform: none; }
+
+        /* Цвета кнопок */
+        .btn-green { background: #66bb6a; } .btn-green:hover { background: #4caf50; }
+        .btn-purple { background: #ab47bc; color: white;} .btn-purple:hover { background: #8e24aa; }
+        .btn-orange { background: #ffa726; color: black;} .btn-orange:hover { background: #fb8c00; }
+        .btn-cyan { background: #00e5ff; color: black;} .btn-cyan:hover { background: #00b8d4; }
+        .btn-gold { background: #ffd700; color: black;} .btn-gold:hover { background: #ffea00; box-shadow: 0 0 10px #ffd700; }
+        .btn-small { padding: 6px 10px; font-size: 12px; }
+
+        /* Кнопки-иконки для верхнего меню */
+        .btn-icon { padding: 8px 12px; font-size: 22px; display: flex; justify-content: center; align-items: center; border-radius: 8px; }
+
+        /* Menus */
+        .menu-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; pointer-events: auto; z-index: 100; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
+        .menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .menu-box { background: var(--ui-bg); border: 2px solid #444; padding: 30px; border-radius: 12px; color: var(--text-main); text-align: center; min-width: 320px; max-width: 90vw; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 15px; }
+        .menu-box h2 { margin-top: 0; color: var(--accent); text-shadow: 0 0 10px rgba(79, 195, 247, 0.3); }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+
+        /* Shop & Items */
+        .shop-item, .case-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid #444; display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; }
+        .case-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 100%; margin-top: 5px; }
+
+        /* Upgrades Menu */
+        .upgrade-card { background: rgba(0, 229, 255, 0.05); border: 2px solid #555; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .upgrade-card.maxed { border-color: #66bb6a; background: rgba(102, 187, 106, 0.1); }
+
+        /* Inventory & Pets */
+        .pet-card { background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; border: 2px solid; position: relative; cursor: pointer; transition: 0.2s; }
+        .pet-card:hover { transform: translateY(-5px); }
+        .pet-card.equipped { box-shadow: 0 0 15px var(--accent); border-color: var(--accent) !important; background: rgba(79, 195, 247, 0.2); }
+        .pet-img { font-size: 40px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .pet-stats { font-size: 12px; color: #ccc; }
+        .slots-info { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #555; }
+
+        /* Roulette & Rewards */
+        .roulette-container { width: 100%; height: 120px; background: #111; border: 3px solid #333; border-radius: 8px; position: relative; overflow: hidden; margin: 20px 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .roulette-line { position: absolute; left: 50%; top: 0; height: 100%; width: 4px; background: red; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 10px red; }
+        .roulette-track { display: flex; height: 100%; position: absolute; left: 50%; transition: transform 4s cubic-bezier(0.15, 0.85, 0.15, 1); will-change: transform; }
+        .roulette-item { width: 100px; height: 100px; margin: 10px 5px; flex-shrink: 0; background: #222; border: 2px solid; border-radius: 8px; display: flex; justify-content: center; align-items: center; flex-direction: column; font-size: 30px; }
+        .roulette-item span { font-size: 12px; font-weight: bold; margin-top: 5px; }
+
+        .fast-reward-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin: 20px 0; }
+        .fast-reward-item { background: #222; border: 2px solid; border-radius: 8px; padding: 15px; text-align: center; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* Mobile Controls - СДЕЛАНО АККУРАТНО */
+        .mobile-controls {
+            display: none;
+            padding: 15px 20px 35px 20px;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: none;
+            position: absolute;
+            bottom: 0; width: 100%;
+            z-index: 10; touch-action: none;
+        }
+        .d-pad, .action-btn { pointer-events: auto; }
+        .d-pad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 6px; }
+
+        .ctrl-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 20px; display: flex; justify-content: center; align-items: center; user-select: none;
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        }
+        .ctrl-btn:active { background: rgba(255, 255, 255, 0.3); color: white; border-color: rgba(255, 255, 255, 0.4); }
+        .up { grid-column: 2; grid-row: 1; } .left { grid-column: 1; grid-row: 2; } .right { grid-column: 3; grid-row: 2; } .down { grid-column: 2; grid-row: 3; }
+
+        .action-btn .ctrl-btn {
+            width: 70px; height: 70px;
+            background: rgba(79, 195, 247, 0.25);
+            border-color: rgba(79, 195, 247, 0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 28px; color: white;
+        }
+        .action-btn .ctrl-btn:active { background: rgba(79, 195, 247, 0.5); }
+
+        /* Damage numbers */
+        #damage-container { position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 40; }
+        .dmg-text { position: absolute; font-weight: bold; font-size: 20px; color: white; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; animation: floatUp 1s forwards; pointer-events: none; }
+        .dmg-crit { color: #ffeb3b; font-size: 28px; text-shadow: 0 0 5px #ff9800, -1px -1px 0 #000, 1px 1px 0 #000; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(1.2); opacity: 0; } }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .hud { flex-direction: column; gap: 8px; padding: 10px; align-items: stretch; }
+            .stats { padding: 8px; gap: 10px; justify-content: space-around; flex-wrap: wrap; border-width: 1px; }
+            .stat-item { font-size: 13px; gap: 4px; }
+
+            .top-buttons { justify-content: center; flex-wrap: nowrap; gap: 6px; }
+            .top-buttons .btn-icon { flex: 1; padding: 8px 0; font-size: 20px; }
+
+            .menu-box { padding: 15px; min-width: 95vw; width: 95vw; gap: 10px; border-radius: 8px; }
+            .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .shop-item, .case-item, .upgrade-card { padding: 10px; }
+            .case-buttons { grid-template-columns: 1fr; }
+
+            .d-pad { grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(3, 45px); gap: 5px; }
+            .ctrl-btn { font-size: 18px; }
+            .action-btn .ctrl-btn { width: 65px; height: 65px; font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-overlay active" id="platform-menu">
+        <div class="menu-box">
+            <h2 data-lang="platform_title">Выбор Платформы</h2>
+            <p style="color: #aaa; margin-bottom: 10px;" data-lang="platform_desc">Выберите устройство для удобного управления</p>
+            <button class="btn btn-purple" onclick="setPlatform('pc')">💻 ПК (Клавиатура и Мышь)</button>
+            <button class="btn btn-orange" onclick="setPlatform('mobile')">📱 Мобильный (Сенсор)</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="rebirth-menu">
+        <div class="menu-box" style="max-width: 600px;">
+            <h2 data-lang="rebirthMenuTitle">🔥 Перерождения</h2>
+            <p style="color: #aaa; font-size: 14px;" data-lang="rebirthMenuDesc">Сбросьте весь прогресс, чтобы получить вечный множитель алмазов!</p>
+            <div id="rebirth-info" style="margin: 20px 0; font-size: 18px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #ffea00;"></div>
+            <button class="btn btn-gold" id="btn-do-rebirth" onclick="doRebirth()" data-lang="doRebirth">Переродиться</button>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('rebirth-menu')" data-lang="close">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="shop-menu">
+        <div class="menu-box">
+            <h2 data-lang="shopTitle">Магазин и Кузница</h2>
+            <div class="menu-grid">
+                <div class="shop-item">
+                    <strong data-lang="pickaxePower">Сила Кирки</strong>
+                    <span style="font-size: 0.8em; color: #aaa;" data-lang="pickaxeDesc">Ломайте блоки быстрее</span>
+                    <button class="btn" id="btn-buy-pick" onclick="buyPickaxe()" data-lang="buy">Купить</button>
+                </div>
+                <div class="shop-item" style="border-color: var(--accent);">
+                    <strong data-lang="newLoc">Новая Локация</strong>
+                    <span id="text-loc-name-disp" style="color: var(--accent);">Desert (30 💎)</span>
+                    <button class="btn" id="btn-buy-loc" onclick="buyLocation()" data-lang="travel">Отправиться</button>
+                </div>
+            </div>
+            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('shop-menu')" data-lang="close">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="upgrades-menu">
+        <div class="menu-box" style="max-width: 800px;">
+            <h2 data-lang="upgradesTitle">✨ Специальные Улучшения</h2>
+            <p style="color: #aaa; font-size: 14px;" data-lang="upgradesDesc">Улучшайте способности персонажа за алмазы!</p>
+            <div class="menu-grid" id="upgrades-content" style="margin-top: 10px;"></div>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('upgrades-menu')" data-lang="close">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="cases-menu">
+        <div class="menu-box" style="max-width: 900px;">
+            <h2 data-lang="casesTitle">Кейсы Питомцев</h2>
+            <div class="menu-grid" id="cases-grid"></div>
+            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('cases-menu')" data-lang="close">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="roulette-overlay" style="z-index: 150;">
+        <div class="menu-box" style="width: 90vw; max-width: 600px;">
+            <h2 id="roulette-title" data-lang="opening">Открываем...</h2>
+            <div class="roulette-container">
+                <div class="roulette-line"></div>
+                <div class="roulette-track" id="roulette-track"></div>
+            </div>
+            <div id="roulette-result" style="font-size: 24px; font-weight: bold; min-height: 40px;"></div>
+            <button class="btn btn-green" id="btn-claim-pet" style="display: none;" onclick="claimPet()" data-lang="claimPet">Забрать Питомца!</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="fast-result-overlay" style="z-index: 150;">
+        <div class="menu-box" style="width: 90vw; max-width: 800px;">
+            <h2 data-lang="results">Результаты Кейса</h2>
+            <div class="fast-reward-grid" id="fast-reward-grid"></div>
+            <button class="btn btn-green" onclick="claimFastPets()" data-lang="claimAll">Забрать Всех!</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="inv-menu">
+        <div class="menu-box" style="width: 90vw; max-width: 900px;">
+            <h2 data-lang="invTitle">Инвентарь и Питомцы</h2>
+            <div class="slots-info">
+                <div style="text-align: left;">
+                    <strong style="color:var(--accent);" data-lang="activeBuffs">Активные Баффы: </strong><br>
+                    <span id="active-pet-buffs" style="font-size: 14px;">None</span>
+                </div>
+                <div id="slots-counter" style="font-weight: bold; font-size: 18px;">Slots: 0 / 3</div>
+            </div>
+            <div class="menu-grid" id="inventory-grid" style="margin-top: 10px; max-height: 50vh; overflow-y: auto;"></div>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 20px;" onclick="closeMenu('inv-menu')" data-lang="close">Закрыть</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="settings-menu">
+        <div class="menu-box">
+            <h2 data-lang="settingsTitle">Настройки и Оптимизация</h2>
+            <p style="color: #ccc; font-size: 12px; margin-bottom: 10px;" data-lang="lagDesc">Если игра лагает, уменьшите графику до LOW</p>
+            <div class="shop-item">
+                <button class="btn btn-orange" id="btn-toggle-lang" onclick="toggleLang()">Язык: RU</button>
+                <button class="btn" id="btn-toggle-sound" onclick="toggleSound()">Sound: ON</button>
+                <button class="btn btn-cyan" id="btn-toggle-graphics" onclick="toggleGraphics()">Graphics: HIGH</button>
+                <button class="btn btn-green" onclick="forceSave()" style="margin-top:20px;" data-lang="save">💾 Сохранить Игру</button>
+                <button class="btn" onclick="resetSave()" style="background: darkred; color: white; margin-top:10px;" data-lang="reset">Сбросить ВСЕ сохранения</button>
+            </div>
+            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('settings-menu')" data-lang="close">Закрыть</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="damage-container"></div>
+
+    <div class="ui-layer">
+        <div class="hud">
+            <div class="stats">
+                <div class="stat-item" style="font-size: 1.1em;">
+                    <span style="color: var(--diamond);">💎</span>
+                    <span id="ui-diamonds">0</span>
+                    <span id="ui-mult-display" style="color: #00e5ff; font-size: 0.8em; margin-left: 3px;">(x1.0)</span>
+                </div>
+                <div class="stat-item"><span data-lang="lvl">Ур.</span><span id="ui-pickaxe">1</span></div>
+                <div class="stat-item"><span data-lang="depth">Глубина:</span><span id="ui-depth">0m</span></div>
+                <div class="stat-item" style="color:#ff9800;"><span data-lang="combo">Комбо:</span><span id="ui-combo">0</span></div>
+            </div>
+
+            <div class="top-buttons">
+                <button class="btn btn-icon" onclick="openMenu('shop-menu')" title="Магазин">🛒</button>
+                <button class="btn btn-icon btn-cyan" onclick="openMenu('upgrades-menu')" title="Улучшения">✨</button>
+                <button class="btn btn-icon btn-purple" onclick="openMenu('cases-menu')" title="Кейсы">🎁</button>
+                <button class="btn btn-icon btn-green" onclick="openMenu('inv-menu')" title="Питомцы">🐾</button>
+                <button class="btn btn-icon btn-gold" onclick="openMenu('rebirth-menu')" title="Перерождение">🔥</button>
+                <button class="btn btn-icon" style="background:#555; color:white;" onclick="openMenu('settings-menu')" title="Настройки">⚙️</button>
+            </div>
+        </div>
+        <div class="mobile-controls" id="mobile-ui">
+            <div class="d-pad">
+                <div class="ctrl-btn up" id="m-up">△</div>
+                <div class="ctrl-btn left" id="m-left">◁</div>
+                <div class="ctrl-btn right" id="m-right">▷</div>
+                <div class="ctrl-btn down" id="m-down">▽</div>
+            </div>
+            <div class="action-btn"><div class="ctrl-btn" id="m-mine">⛏️</div></div>
+        </div>
+    </div>
+
+<script>
+/** AUDIO SYSTEM */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const sounds = {
+    mine: () => playTone(150, 40, 'square', 0.1, 0.05),
+    gem: () => { playTone(600, 1200, 'sine', 0.1, 0.1); setTimeout(()=>playTone(1200, 1800, 'sine', 0.1, 0.1), 100); },
+    crit: () => playTone(300, 50, 'sawtooth', 0.2, 0.3),
+    jump: () => playTone(150, 300, 'sine', 0.1, 0.2),
+    open: () => playTone(400, 400, 'triangle', 0.1, 0.5),
+    win: () => { playTone(400, 600, 'square', 0.1, 0.1); setTimeout(()=>playTone(600, 800, 'square', 0.1, 0.3), 150); }
+};
+function playTone(startFreq, endFreq, type, vol, duration) {
+    if(!state.settings.sound) return;
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+/** LOCALIZATION */
+const locales = {
+    ru: {
+        platform_title: "Выбор Платформы", platform_desc: "Выберите устройство для удобного управления",
+        settingsTitle: "Настройки и Оптимизация", lagDesc: "Если игра лагает, уменьшите графику до LOW", save: "💾 Сохранить Игру", reset: "Сбросить ВСЕ сохранения", close: "Закрыть",
+        shopTitle: "Магазин и Кузница", pickaxePower: "Сила Кирки", pickaxeDesc: "Ломайте блоки быстрее", buy: "Купить", newLoc: "Новая Локация", travel: "Отправиться",
+        upgradesTitle: "✨ Специальные Улучшения", upgradesDesc: "Улучшайте способности персонажа за алмазы!", casesTitle: "Кейсы Питомцев",
+        rebirthMenuTitle: "🔥 Перерождения", rebirthMenuDesc: "Сбросьте весь прогресс, чтобы получить вечный множитель алмазов!", doRebirth: "Переродиться", maxRebirth: "МАКСИМУМ ПЕРЕРОЖДЕНИЙ",
+        current: "Текущий", willBe: "Будет", cost: "Цена", invTitle: "Инвентарь и Питомцы", activeBuffs: "Активные Баффы:", none: "Нет", slots: "Слоты",
+        claimPet: "Забрать!", claimAll: "Забрать Всех!", opening: "Открываем...", results: "Результаты Кейса", equip: "Надеть", unequip: "Снять", lvl: "Ур.", depth: "Глубина:", combo: "Комбо:",
+        lang: "Язык: RU", confirmRebirth: "Вы уверены? Весь прогресс (кроме перерождений) будет сброшен!", rebirthSuccess: "Перерождение успешно!", max: "МАКС", basicText: "Базовый",
+        biomeNames: ["Лес", "Пустыня", "Ледяные Глубины", "Вулкан", "Преисподняя", "Кристальные Пещеры", "Бездна"],
+        upgrades_gemMult: { name: "Алмазный Буст", desc: "Увеличивает множитель алмазов" },
+        upgrades_reach: { name: "Длинная Рука", desc: "Дистанция копания (блоков)" },
+        upgrades_critChance: { name: "Точный Удар", desc: "Шанс критического удара" },
+        upgrades_critMult: { name: "Смертельный Крит", desc: "Урон от крита" }
+    },
+    en: {
+        platform_title: "Select Platform", platform_desc: "Choose your device for comfortable controls",
+        settingsTitle: "Settings & Optimization", lagDesc: "If the game lags, lower graphics to LOW", save: "💾 Save Game", reset: "Reset ALL Save Data", close: "Close",
+        shopTitle: "Shop & Blacksmith", pickaxePower: "Pickaxe Power", pickaxeDesc: "Break blocks faster", buy: "Buy", newLoc: "New Location", travel: "Travel",
+        upgradesTitle: "✨ Special Upgrades", upgradesDesc: "Upgrade character abilities with diamonds!", casesTitle: "Pet Cases",
+        rebirthMenuTitle: "🔥 Rebirths", rebirthMenuDesc: "Reset ALL progress to get a permanent diamond multiplier!", doRebirth: "Rebirth Now", maxRebirth: "MAX REBIRTH",
+        current: "Current", willBe: "Will be", cost: "Cost", invTitle: "Inventory & Pets", activeBuffs: "Active Buffs:", none: "None", slots: "Slots",
+        claimPet: "Claim Pet!", claimAll: "Claim All!", opening: "Opening...", results: "Case Results", equip: "Equip", unequip: "Unequip", lvl: "Lv.", depth: "Depth:", combo: "Combo:",
+        lang: "Language: EN", confirmRebirth: "Are you sure? ALL progress (except rebirths) will be reset!", rebirthSuccess: "Rebirth successful!", max: "MAX", basicText: "Basic",
+        biomeNames: ["Forest", "Desert", "Ice Depths", "Volcano", "Underworld", "Crystal Caves", "Abyss"],
+        upgrades_gemMult: { name: "Diamond Boost", desc: "Increases diamond multiplier" },
+        upgrades_reach: { name: "Long Reach", desc: "Mining distance (blocks)" },
+        upgrades_critChance: { name: "Precision Strike", desc: "Critical hit chance" },
+        upgrades_critMult: { name: "Deadly Crit", desc: "Critical hit damage" }
+    }
+};
+
+function T(key) { return locales[state.lang][key] || key; }
+
+function toggleLang() {
+    state.lang = state.lang === 'ru' ? 'en' : 'ru';
+    updateLangUI(); updateHUD(); updateInventoryUI(); updateUpgradesUI(); buildCasesUI(); updateRebirthUI(); saveGame();
+}
+
+function updateLangUI() {
+    document.querySelectorAll('[data-lang]').forEach(el => { el.innerText = T(el.getAttribute('data-lang')); });
+    document.getElementById('btn-toggle-lang').innerText = T('lang');
+}
+
+/** GAME DATA & CONFIGURATION */
+const biomes = [
+    { bg: '#87CEEB', sky: true, grass: '#4caf50', dirt: '#795548', stone: '#9e9e9e', hardstone: '#616161', loot: 0, hardness: 0, cost: 0 },
+    { bg: '#FFE082', sky: true, grass: '#EEDC82', dirt: '#F4A460', stone: '#FFB300', hardstone: '#FF8F00', loot: 0.03, hardness: 0.2, cost: 30 },
+    { bg: '#B3E5FC', sky: true, grass: '#B2EBF2', dirt: '#81D4FA', stone: '#29B6F6', hardstone: '#0288D1', loot: 0.06, hardness: 0.4, cost: 100 },
+    { bg: '#3e2723', sky: false, grass: '#FF5722', dirt: '#D84315', stone: '#BF360C', hardstone: '#3E2723', loot: 0.1, hardness: 0.6, cost: 300 },
+    { bg: '#1a0000', sky: false, grass: '#8e0000', dirt: '#4a0000', stone: '#2a0000', hardstone: '#110000', loot: 0.2, hardness: 1.0, cost: 1000 },
+    { bg: '#2a002a', sky: false, grass: '#da70d6', dirt: '#800080', stone: '#4b0082', hardstone: '#29004f', loot: 0.35, hardness: 1.5, cost: 3000 },
+    { bg: '#00001a', sky: false, grass: '#00008b', dirt: '#0000cd', stone: '#000044', hardstone: '#000022', loot: 0.5, hardness: 2.2, cost: 8000 }
+];
+
+const rarities = {
+    common: { color: "var(--rarity-common)", chance: 60, mult: 1.3, dmg: 1 },
+    rare: { color: "var(--rarity-rare)", chance: 25, mult: 1.6, dmg: 2 },
+    epic: { color: "var(--rarity-epic)", chance: 10, mult: 2.5, dmg: 3 },
+    mythic: { color: "var(--rarity-mythic)", chance: 4, mult: 4.0, dmg: 5 },
+    legendary: { color: "var(--rarity-legendary)", chance: 1, mult: 6.0, dmg: 10 }
+};
+
+const petDB = [
+    { id: 'p1', name: "Rock Slime", icon: "🪨", rarity: "common" }, { id: 'p2', name: "Dirt Worm", icon: "🐛", rarity: "common" },
+    { id: 'p3', name: "Crystal Bat", icon: "🦇", rarity: "rare" }, { id: 'p4', name: "Mole Miner", icon: "🐹", rarity: "rare" },
+    { id: 'p5', name: "Fire Wisp", icon: "🔥", rarity: "epic" }, { id: 'p6', name: "Gem Ghost", icon: "👻", rarity: "epic" },
+    { id: 'p7', name: "Earth Golem", icon: "🗿", rarity: "mythic" }, { id: 'p8', name: "Diamond Dragon", icon: "🐲", rarity: "legendary" },
+    { id: 'p9', name: "Cosmic Core", icon: "🌌", rarity: "legendary" }
+];
+
+const casesDB = [
+    { id: 'c1', name: "Basic Case", cost: 20, drops: { common: 60, rare: 30, epic: 9, mythic: 1, legendary: 0 } },
+    { id: 'c2', name: "Pro Case", cost: 100, drops: { common: 0, rare: 50, epic: 35, mythic: 12, legendary: 3 } },
+    { id: 'c3', name: "God Case", cost: 500, drops: { common: 0, rare: 0, epic: 50, mythic: 35, legendary: 15 } }
+];
+
+const upgradesDB = {
+    gemMult: { icon: "💎", levels: [ {cost: 20, val: 0.2, text: "+0.2x"}, {cost: 100, val: 0.7, text: "+0.7x"}, {cost: 500, val: 1.5, text: "+1.5x"}, {cost: 2500, val: 3.5, text: "+3.5x"}, {cost: 10000, val: 8.0, text: "+8.0x"} ] },
+    reach: { icon: "🦾", levels: [ {cost: 200, val: 2.0, text: "2.0"}, {cost: 1500, val: 2.5, text: "2.5"}, {cost: 5000, val: 3.0, text: "3.0"} ] },
+    critChance: { icon: "🎯", levels: [ {cost: 150, val: 0.15, text: "15%"}, {cost: 800, val: 0.20, text: "20%"}, {cost: 3000, val: 0.30, text: "30%"}, {cost: 10000, val: 0.40, text: "40%"} ] },
+    critMult: { icon: "💥", levels: [ {cost: 300, val: 3.0, text: "x3.0"}, {cost: 2000, val: 4.0, text: "x4.0"}, {cost: 8000, val: 5.0, text: "x5.0"} ] }
+};
+
+const rebirthsDB = [
+    { cost: 500, mult: 1.5 }, { cost: 5000, mult: 2.5 }, { cost: 10000, mult: 3.5 }, { cost: 50000, mult: 6.0 }, { cost: 100000, mult: 10.0 }
+];
+
+const blockHp = { dirt: 2, stone: 6, hardstone: 15, diamond: 10 };
+const TS = 40;
+
+/** GLOBAL STATE */
+let state = {
+    diamonds: 1, pickaxeLevel: 1, pickaxePower: 1, pickaxeCost: 5, currentLocIndex: 0,
+    pets: [], equippedPetIds: [], unlockedPetSlots: 3, combo: 0,
+    upgrades: { gemMult: 0, reach: 0, critChance: 0, critMult: 0 },
+    settings: { sound: true, graphics: 'high' },
+    rebirths: 0, lang: 'ru'
+};
+
+let gameStarted = false; let isMobileMode = false; let comboTimer = 0; let isMenuOpen = false; let pendingPetRewards = [];
+const keys = { w: false, a: false, s: false, d: false, justPressedW: false, space: false };
+const player = { x: 0, y: 120, vx: 0, vy: 0, w: 30, h: 36, speed: 4, jump: -8.5, grounded: false, facingRight: true, swingTimer: 0, reach: 1.5 };
+let world = {}; let particles = []; let damageTexts = [];
+
+function getDbPet(pet) { let dbP = petDB.find(p => p.id === pet.id); return dbP ? dbP : pet; }
+function getPetIcon(pet) { return getDbPet(pet).icon || "🐾"; }
+function getPetName(pet) { return getDbPet(pet).name || "Unknown"; }
+
+/** SAVE / LOAD SYSTEM (SAFE) */
+function forceSave() { saveGame(); alert("Game Saved!"); }
+function saveGame() { localStorage.setItem('miningAdventureSaveV6', JSON.stringify(state)); }
+function loadGame() {
+    const saved = localStorage.getItem('miningAdventureSaveV6');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            state = { ...state, ...parsed };
+        } catch(e) { console.error("Save corrupted", e); }
+    }
+
+    // Безопасное восстановление, если старое сохранение не имело этих параметров (Фикс бага на iOS)
+    if(!state.settings) state.settings = { sound: true, graphics: 'high' };
+    if(!state.settings.graphics) state.settings.graphics = 'high';
+    if(state.settings.sound === undefined) state.settings.sound = true;
+    if(!state.upgrades) state.upgrades = { gemMult: 0, reach: 0, critChance: 0, critMult: 0 };
+    if(state.rebirths === undefined) state.rebirths = 0;
+    if(state.lang === undefined) state.lang = 'ru';
+
+    state.pickaxePower = state.pickaxeLevel;
+    updateLangUI();
+}
+function resetSave() {
+    if(confirm("ВИ ВПЕВНЕНІ? Це видалить всі збереження і повністю скине прогрес! / ARE YOU SURE?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+setInterval(saveGame, 5000);
+
+/** CORE INIT */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d'); // Убрал alpha: false для совместимости с Safari iOS
+let width, height, camera = { x: 0, y: 0 };
+
+function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+window.addEventListener('resize', resize); resize();
+
+function setPlatform(platform) {
+    document.getElementById('platform-menu').classList.remove('active');
+
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    loadGame(); // Теперь 100% безопасно
+    gameStarted = true;
+
+    if (platform === 'mobile') {
+        isMobileMode = true;
+        document.getElementById('mobile-ui').style.display = 'flex';
+    }
+
+    updateHUD(); buildCasesUI(); updateInventoryUI(); updateUpgradesUI(); updateRebirthUI();
+}
+
+/** WORLD GENERATION */
+function getBlock(bx, by) {
+    if (bx < -30 || bx > 30 || by > 300) return { type: 'barrier', unbreakable: true };
+    if (by < 5) return null;
+
+    const key = `${bx},${by}`;
+    if (world[key]) { if (world[key].type === 'air') return null; return world[key]; }
+
+    let biome = biomes[state.currentLocIndex];
+    if (by === 5) { world[key] = { type: 'grass', hp: 2, maxHp: 2, color: biome.grass }; }
+    else {
+        let type = 'dirt', hp = blockHp.dirt, color = biome.dirt;
+        const depth = by - 5;
+        const diamondChance = Math.min(0.01 + depth * 0.005 + biome.loot, 0.25);
+        const hardstoneChance = Math.min(0.0 + depth * 0.02 + biome.hardness, 0.6);
+        const stoneChance = Math.min(0.2 + depth * 0.05 + biome.hardness, 0.9);
+        let hpMult = 1 + (biome.hardness * 2);
+
+        if (Math.random() < diamondChance) { type = 'diamond'; hp = Math.floor((blockHp.diamond + depth / 5) * hpMult); color = '#00e5ff'; }
+        else if (Math.random() < hardstoneChance) { type = 'hardstone'; hp = Math.floor((blockHp.hardstone + depth / 3) * hpMult); color = biome.hardstone; }
+        else if (Math.random() < stoneChance) { type = 'stone'; hp = Math.floor((blockHp.stone + depth / 4) * hpMult); color = biome.stone; }
+        else { hp = Math.floor(hp * hpMult); }
+        world[key] = { type, hp, maxHp: hp, color: color };
+    }
+    return world[key];
+}
+
+/** INPUT & CONTROLS */
+window.addEventListener('keydown', e => {
+    if (isMenuOpen || !gameStarted) return;
+    if (e.code === 'KeyW' || e.code === 'ArrowUp') { if (!keys.w) keys.justPressedW = true; keys.w = true; }
+    if (e.code === 'KeyA' || e.code === 'ArrowLeft') { keys.a = true; player.facingRight = false; }
+    if (e.code === 'KeyS' || e.code === 'ArrowDown') { keys.s = true; }
+    if (e.code === 'KeyD' || e.code === 'ArrowRight') { keys.d = true; player.facingRight = true; }
+    if (e.code === 'Space') { e.preventDefault(); doMineAction(); }
+});
+window.addEventListener('keyup', e => {
+    if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.w = false;
+    if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.a = false;
+    if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.s = false;
+    if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.d = false;
+});
+canvas.addEventListener('mousedown', e => {
+    if (isMenuOpen || !gameStarted || isMobileMode) return;
+    if (e.button === 0) mineBlockByCoords(e.clientX, e.clientY);
+});
+const addTouch = (id, key, isFaceRight = null) => {
+    const el = document.getElementById(id);
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); if (key === 'w' && !keys.w) keys.justPressedW = true; keys[key] = true; if(isFaceRight !== null) player.facingRight = isFaceRight; });
+    el.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+};
+addTouch('m-up', 'w'); addTouch('m-left', 'a', false); addTouch('m-right', 'd', true); addTouch('m-down', 's');
+document.getElementById('m-mine').addEventListener('touchstart', (e) => { e.preventDefault(); if(!isMenuOpen) doMineAction(); });
+
+/** MINING LOGIC & STATS */
+function getActivePetStats() {
+    let buff = { mult: 0, dmg: 0 };
+    state.equippedPetIds.forEach(id => {
+        let petData = state.pets.find(p => p.instanceId === id);
+        if(petData) {
+            let rStats = rarities[petData.rarity];
+            buff.mult += (rStats.mult - 1); buff.dmg += rStats.dmg;
+        }
+    });
+    return buff;
+}
+
+function getTotalMultiplier() {
+    let petMult = getActivePetStats().mult;
+    let upgLvl = state.upgrades.gemMult;
+    let upgMult = upgLvl > 0 ? upgradesDB.gemMult.levels[upgLvl - 1].val : 0;
+    let rebirthMult = state.rebirths > 0 ? rebirthsDB[state.rebirths - 1].mult : 1.0;
+    return (1.0 + petMult + upgMult) * rebirthMult;
+}
+
+function spawnParticles(x, y, color) {
+    if(state.settings.graphics === 'low') return;
+    let count = state.settings.graphics === 'medium' ? 3 : 8;
+    for(let i=0; i<count; i++) {
+        particles.push({ x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-1)*10, color, life: 1, size: Math.random()*6+2 });
+    }
+}
+
+function spawnDamageText(x, y, amount, isCrit) {
+    const d = document.createElement('div');
+    d.className = `dmg-text ${isCrit ? 'dmg-crit' : ''}`; d.innerText = amount;
+    d.style.left = `${x}px`; d.style.top = `${y}px`;
+    document.getElementById('damage-container').appendChild(d);
+    setTimeout(() => d.remove(), 1000);
+}
+
+function getPlayerReach() {
+    let lvl = state.upgrades.reach;
+    return lvl > 0 ? upgradesDB.reach.levels[lvl-1].val : 1.5;
+}
+
+function doMineAction() {
+    if (player.swingTimer > 0) return;
+    let bx = Math.floor((player.x + player.w/2) / TS);
+    let by = Math.floor((player.y + player.h/2) / TS);
+    if (keys.s) { by += 1; } else { bx += player.facingRight ? 1 : -1; }
+    executeMine(bx, by);
+}
+
+function mineBlockByCoords(screenX, screenY) {
+    if (player.swingTimer > 0) return;
+    const bx = Math.floor((screenX + camera.x - width / 2) / TS);
+    const by = Math.floor((screenY + camera.y - height / 2) / TS);
+    const px = player.x + player.w / 2, py = player.y + player.h / 2;
+    if (Math.hypot(px - (bx * TS + TS / 2), py - (by * TS + TS / 2)) <= getPlayerReach() * TS) { executeMine(bx, by); }
+}
+
+function executeMine(bx, by) {
+    const block = getBlock(bx, by);
+    if (!block || block.unbreakable) return;
+
+    player.swingTimer = 15;
+    const petBuffs = getActivePetStats();
+
+    let critLvl = state.upgrades.critChance;
+    let baseCritChance = critLvl > 0 ? upgradesDB.critChance.levels[critLvl-1].val : 0.1;
+    let isCrit = Math.random() < baseCritChance;
+    let baseDamage = state.pickaxePower + petBuffs.dmg;
+    let critMultLvl = state.upgrades.critMult;
+    let critMultVal = critMultLvl > 0 ? upgradesDB.critMult.levels[critMultLvl-1].val : 2.5;
+    let finalDamage = Math.floor(baseDamage * (isCrit ? critMultVal : 1));
+
+    block.hp -= finalDamage; sounds.mine();
+    let screenX = (bx * TS + TS/2) - camera.x + width/2;
+    let screenY = (by * TS + TS/2) - camera.y + height/2;
+    spawnDamageText(screenX + (Math.random()*20-10), screenY, finalDamage, isCrit);
+    if(isCrit) sounds.crit();
+
+    if (block.hp <= 0) {
+        spawnParticles(bx * TS + TS/2, by * TS + TS/2, block.color);
+        if (block.type === 'diamond') {
+            let baseGems = 1 + state.currentLocIndex;
+            let finalGems = Math.floor(baseGems * getTotalMultiplier());
+            state.diamonds += finalGems; sounds.gem();
+            spawnDamageText(screenX, screenY-20, `+${finalGems}💎`, true);
+        }
+        world[`${bx},${by}`] = { type: 'air' };
+        state.combo++; comboTimer = 120; updateHUD();
+    }
+}
+
+/** PHYSICS */
+function checkCollision(x, y) {
+    const left = Math.floor((x + 2) / TS), right = Math.floor((x + player.w - 2) / TS);
+    const top = Math.floor(y / TS), bottom = Math.floor((y + player.h - 0.1) / TS);
+    for (let by = top; by <= bottom; by++) {
+        for (let bx = left; bx <= right; bx++) {
+            let b = getBlock(bx, by);
+            if (b && b.type !== 'air') return true;
+        }
+    }
+    return false;
+}
+
+let visualPets = [];
+function updatePhysics() {
+    if (!gameStarted || isMenuOpen) return;
+
+    player.vx = keys.a ? -player.speed : keys.d ? player.speed : 0;
+    if (player.vx !== 0) {
+        if (!checkCollision(player.x + player.vx, player.y)) { player.x += player.vx; }
+        else {
+            if (player.vx > 0) player.x = Math.floor((player.x + player.vx + player.w - 2) / TS) * TS - player.w - 0.1;
+            else player.x = (Math.floor((player.x + player.vx + 2) / TS) + 1) * TS + 0.1;
+        }
+    }
+
+    player.vy += 0.45;
+    if (player.vy > 12) player.vy = 12;
+    if (keys.justPressedW && player.grounded) { player.vy = player.jump; player.grounded = false; sounds.jump(); }
+    keys.justPressedW = false;
+
+    if (!checkCollision(player.x, player.y + player.vy)) {
+        player.y += player.vy; player.grounded = false;
+    } else {
+        if (player.vy > 0) { player.grounded = true; player.y = Math.floor((player.y + player.vy + player.h - 0.1) / TS) * TS - player.h - 0.01; }
+        else if (player.vy < 0) { player.y = (Math.floor((player.y + player.vy) / TS) + 1) * TS + 0.01; }
+        player.vy = 0;
+    }
+
+    camera.x += (player.x + player.w / 2 - camera.x) * 0.1;
+    camera.y += (player.y + player.h / 2 - camera.y) * 0.1;
+
+    if(comboTimer > 0) { comboTimer--; if(comboTimer <= 0) { state.combo = 0; updateHUD(); } }
+
+    for(let i = particles.length-1; i>=0; i--) {
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy; p.vy += 0.5; p.life -= 0.02;
+        if(p.life <= 0) particles.splice(i, 1);
+    }
+
+    while(visualPets.length < state.equippedPetIds.length) { visualPets.push({ x: player.x, y: player.y }); }
+    visualPets = visualPets.slice(0, state.equippedPetIds.length);
+
+    state.equippedPetIds.forEach((id, index) => {
+        let pet = state.pets.find(p => p.instanceId === id); if(!pet) return;
+        let offsetX = player.facingRight ? -30 - (index * 25) : 30 + (index * 25);
+        let offsetY = player.y - 10 + Math.sin(Date.now()/300 + index)*10;
+        let vp = visualPets[index];
+        vp.x += (player.x + offsetX - vp.x) * 0.05; vp.y += (offsetY - vp.y) * 0.05;
+        vp.icon = getPetIcon(pet); vp.color = rarities[pet.rarity].color;
+    });
+}
+
+/** RENDERING */
+function draw() {
+    let biome = biomes[state.currentLocIndex] || biomes[0];
+    ctx.fillStyle = camera.y < 300 && biome.sky ? biome.bg : '#1a1a1a';
+    ctx.fillRect(0, 0, width, height);
+    ctx.save();
+    ctx.translate(-camera.x + width / 2, -camera.y + height / 2);
+
+    const startX = Math.floor((camera.x - width / 2) / TS);
+    const endX = Math.ceil((camera.x + width / 2) / TS);
+    const startY = Math.floor((camera.y - height / 2) / TS);
+    const endY = Math.ceil((camera.y + height / 2) / TS);
+
+    for (let y = startY; y <= endY; y++) {
+        for (let x = startX; x <= endX; x++) {
+            const block = getBlock(x, y);
+            if (block && block.type !== 'barrier' && block.type !== 'air') {
+                ctx.fillStyle = block.color;
+                ctx.fillRect(x * TS, y * TS, TS, TS);
+                if(state.settings.graphics !== 'low') { ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.strokeRect(x * TS, y * TS, TS, TS); }
+                if (block.hp && block.hp < block.maxHp) { ctx.fillStyle = `rgba(0,0,0,${1 - (block.hp/block.maxHp)})`; ctx.fillRect(x * TS, y * TS, TS, TS); }
+            }
+        }
+    }
+
+    const px = player.x, py = player.y;
+    ctx.fillStyle = '#3f51b5'; ctx.fillRect(px + 4, py + 16, 22, 20);
+    ctx.fillStyle = '#f44336'; ctx.fillRect(px + 6, py + 16, 18, 10);
+    ctx.fillStyle = '#ffccbc'; ctx.fillRect(px + 6, py + 4, 18, 12);
+    ctx.fillStyle = '#ffeb3b'; ctx.fillRect(px + 4, py, 22, 8);
+    ctx.fillStyle = '#000'; ctx.fillRect(player.facingRight ? px + 16 : px + 11, py + 8, 3, 3);
+
+    if (player.swingTimer > 0) {
+        ctx.save();
+        ctx.translate(px + (player.facingRight ? 24 : 6), py + 20);
+        let angle = (player.facingRight ? 1 : -1) * (15 - player.swingTimer) * 8;
+        if(keys.s) angle = (player.facingRight ? 1 : -1) * 90;
+        ctx.rotate((angle * Math.PI) / 180);
+        ctx.fillStyle = '#795548'; ctx.fillRect(-2, -18, 4, 20);
+        const pickColors = ['#9e9e9e', '#ffd700', '#00e5ff', '#ff00ff', '#ef5350'];
+        ctx.fillStyle = pickColors[Math.min(Math.floor(state.pickaxeLevel / 3), pickColors.length - 1)];
+        ctx.fillRect(-10, -18, 20, 6); ctx.restore(); player.swingTimer--;
+    } else {
+        ctx.fillStyle = '#795548'; ctx.fillRect(px + (player.facingRight ? 24 : 2), py + 16, 4, 15);
+    }
+
+    ctx.font = "24px 'Segoe UI Emoji', Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    visualPets.forEach(vp => {
+        if(state.settings.graphics === 'high') { ctx.shadowBlur = 15; ctx.shadowColor = vp.color; } else { ctx.shadowBlur = 0; }
+        ctx.fillText(vp.icon, vp.x, vp.y);
+    });
+    ctx.shadowBlur = 0;
+
+    for(let p of particles) { ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fillRect(p.x, p.y, p.size, p.size); }
+    ctx.globalAlpha = 1; ctx.restore();
+
+    if(camera.y > 400 || !biome.sky) {
+        let depthRatio = Math.min(1, (camera.y - 200) / 1000);
+        if(!biome.sky) depthRatio = 1;
+        if (state.settings.graphics === 'low') {
+            ctx.fillStyle = `rgba(0,0,0,${0.6 * depthRatio})`;
+            ctx.fillRect(0, 0, width, height);
+        } else {
+            let screenPx = width/2, screenPy = height/2;
+            let grad = ctx.createRadialGradient(screenPx, screenPy, 50, screenPx, screenPy, 400);
+            grad.addColorStop(0, 'rgba(0,0,0,0)');
+            grad.addColorStop(1, `rgba(0,0,0,${(state.settings.graphics === 'medium' ? 0.7 : 0.85) * depthRatio})`);
+            ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
+        }
+    }
+}
+
+/** UI & MENUS LOGIC */
+function buyPickaxe() {
+    if (state.diamonds >= state.pickaxeCost && state.pickaxeLevel < 30) {
+        state.diamonds -= state.pickaxeCost;
+        state.pickaxeLevel++; state.pickaxePower++; state.pickaxeCost = Math.floor(state.pickaxeCost * 1.5);
+        sounds.win(); updateHUD(); saveGame();
+    }
+}
+function buyLocation() {
+    let nextLoc = biomes[state.currentLocIndex + 1];
+    if (nextLoc && state.diamonds >= nextLoc.cost) {
+        state.diamonds -= nextLoc.cost; state.currentLocIndex++;
+        sounds.win(); updateHUD(); saveGame();
+    }
+}
+
+function updateHUD() {
+    document.getElementById('ui-diamonds').innerText = state.diamonds;
+    document.getElementById('ui-pickaxe').innerText = state.pickaxeLevel;
+    document.getElementById('ui-depth').innerText = Math.max(0, Math.floor((player.y / TS) - 5)) + "m";
+    document.getElementById('ui-combo').innerText = state.combo;
+    document.getElementById('ui-mult-display').innerText = `(x${getTotalMultiplier().toFixed(1)})`;
+    document.getElementById('btn-toggle-sound').innerText = `Sound: ${state.settings.sound ? 'ON' : 'OFF'}`;
+    document.getElementById('btn-toggle-graphics').innerText = `Graphics: ${state.settings.graphics.toUpperCase()}`;
+
+    const btnP = document.getElementById('btn-buy-pick');
+    if (state.pickaxeLevel >= 30) { btnP.innerText = T('max'); btnP.disabled = true; }
+    else { btnP.innerText = `${T('buy')} (${state.pickaxeCost} 💎)`; btnP.disabled = state.diamonds < state.pickaxeCost; }
+
+    const btnL = document.getElementById('btn-buy-loc');
+    let nextLoc = biomes[state.currentLocIndex + 1];
+    if (!nextLoc) { document.getElementById('text-loc-name-disp').innerText = T('max'); btnL.innerText = T('max'); btnL.disabled = true; }
+    else {
+        let locName = locales[state.lang].biomeNames[state.currentLocIndex + 1] || nextLoc.name;
+        document.getElementById('text-loc-name-disp').innerText = `${locName} (${nextLoc.cost} 💎)`;
+        btnL.innerText = T('travel'); btnL.disabled = state.diamonds < nextLoc.cost;
+    }
+}
+
+function openMenu(id) {
+    isMenuOpen = true; document.getElementById(id).classList.add('active');
+    keys.w = keys.a = keys.s = keys.d = keys.space = false;
+    updateHUD();
+    if(id === 'upgrades-menu') updateUpgradesUI();
+    if(id === 'rebirth-menu') updateRebirthUI();
+}
+function closeMenu(id) { isMenuOpen = false; document.getElementById(id).classList.remove('active'); }
+function toggleSound() { state.settings.sound = !state.settings.sound; updateHUD(); }
+function toggleGraphics() {
+    if(state.settings.graphics === 'high') state.settings.graphics = 'medium';
+    else if(state.settings.graphics === 'medium') state.settings.graphics = 'low';
+    else state.settings.graphics = 'high';
+    updateHUD();
+}
+
+/** REBIRTH SYSTEM */
+function updateRebirthUI() {
+    const info = document.getElementById('rebirth-info');
+    const btn = document.getElementById('btn-do-rebirth');
+    let rb = state.rebirths;
+
+    if (rb >= rebirthsDB.length) {
+        info.innerHTML = `<span style="color: #66bb6a; font-weight: bold;">${T('maxRebirth')} (x${rebirthsDB[rb-1].mult})</span>`;
+        btn.style.display = 'none';
+    } else {
+        let next = rebirthsDB[rb];
+        let currentMult = rb > 0 ? rebirthsDB[rb-1].mult : 1;
+        info.innerHTML = `
+            <div style="margin-bottom: 10px;">${T('current')} Multiplier: <b style="color:white;">x${currentMult}</b> 💎</div>
+            <div style="color: #00e5ff;">${T('willBe')} Multiplier: <b>x${next.mult}</b> 💎</div>
+            <div style="margin-top: 10px; font-size: 14px; color: ${state.diamonds >= next.cost ? '#66bb6a' : '#ef5350'}">
+                ${T('cost')}: ${next.cost} 💎
+            </div>
+        `;
+        btn.style.display = 'inline-block'; btn.disabled = state.diamonds < next.cost;
+    }
+}
+
+function doRebirth() {
+    let rb = state.rebirths;
+    if (rb >= rebirthsDB.length) return;
+    if (state.diamonds < rebirthsDB[rb].cost) return;
+    if (!confirm(T('confirmRebirth'))) return;
+
+    state.diamonds = 0; state.pickaxeLevel = 1; state.pickaxePower = 1; state.pickaxeCost = 5; state.currentLocIndex = 0;
+    state.pets = []; state.equippedPetIds = []; state.unlockedPetSlots = 3; state.combo = 0;
+    state.upgrades = { gemMult: 0, reach: 0, critChance: 0, critMult: 0 };
+    state.rebirths++;
+
+    world = {}; particles = []; visualPets = []; damageTexts = [];
+    player.x = 0; player.y = 120; player.vx = 0; player.vy = 0; camera.x = 0; camera.y = 0;
+
+    saveGame(); updateHUD(); closeMenu('rebirth-menu');
+    alert(T('rebirthSuccess'));
+}
+
+/** UPGRADES SYSTEM */
+function updateUpgradesUI() {
+    const container = document.getElementById('upgrades-content'); let html = '';
+    for(const [key, data] of Object.entries(upgradesDB)) {
+        let lvl = state.upgrades[key] || 0;
+        let nextUp = data.levels[lvl];
+        let currentText = lvl > 0 ? data.levels[lvl-1].text : T('basicText');
+        let isMax = !nextUp;
+        let locData = locales[state.lang][`upgrades_${key}`];
+
+        html += `
+            <div class="upgrade-card ${isMax ? 'maxed' : ''}">
+                <div style="font-size: 24px; margin-bottom: 5px; font-family: 'Segoe UI Emoji', sans-serif;">${data.icon}</div>
+                <h3 style="font-size: 16px; margin: 0;">${locData.name} (Lv.${lvl})</h3>
+                <p style="font-size: 11px; color: #aaa; margin: 5px 0; min-height: 15px;">${locData.desc}</p>
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${T('current')} <span style="color:#00e5ff">${currentText}</span></div>
+        `;
+        if(nextUp) {
+            html += `<button class="btn btn-purple btn-small" style="width: 100%;" onclick="buyUpg('${key}')" ${state.diamonds < nextUp.cost ? 'disabled' : ''}>
+                ⬆️ ${nextUp.cost} 💎 (${T('willBe')} ${nextUp.text})
+            </button>`;
+        } else { html += `<div style="color: #66bb6a; font-weight: bold; margin-top: 5px;">${T('max')}</div>`; }
+        html += `</div>`;
+    }
+    container.innerHTML = html;
+}
+
+function buyUpg(key) {
+    let nextUp = upgradesDB[key].levels[state.upgrades[key]];
+    if(nextUp && state.diamonds >= nextUp.cost) {
+        state.diamonds -= nextUp.cost; state.upgrades[key]++;
+        saveGame(); updateUpgradesUI(); updateHUD(); sounds.win();
+    }
+}
+
+/** CASES & PETS SYSTEM */
+function buildCasesUI() {
+    const grid = document.getElementById('cases-grid'); grid.innerHTML = '';
+    casesDB.forEach(c => {
+        const div = document.createElement('div'); div.className = 'case-item';
+        div.innerHTML = `
+            <strong style="color: var(--accent); font-size: 1.2em;">${c.name}</strong>
+            <span style="font-size: 2em;">🎁</span>
+            <div style="font-size: 0.75em; text-align: left; width: 100%; border-top: 1px solid #444; padding-top: 5px; min-height: 80px;">
+                ${c.drops.common ? `<span style="color:var(--rarity-common)">Common: ${c.drops.common}%</span><br>` : ''}
+                ${c.drops.rare ? `<span style="color:var(--rarity-rare)">Rare: ${c.drops.rare}%</span><br>` : ''}
+                ${c.drops.epic ? `<span style="color:var(--rarity-epic)">Epic: ${c.drops.epic}%</span><br>` : ''}
+                ${c.drops.mythic ? `<span style="color:var(--rarity-mythic)">Mythic: ${c.drops.mythic}%</span><br>` : ''}
+                ${c.drops.legendary ? `<span style="color:var(--rarity-legendary)">Legendary: ${c.drops.legendary}%</span>` : ''}
+            </div>
+            <div class="case-buttons">
+                <button class="btn btn-small" onclick="processCaseOpen('${c.id}', 1, ${c.cost})">x1 (${c.cost}💎)</button>
+                <button class="btn btn-small btn-purple" onclick="processCaseOpen('${c.id}', 3, ${c.cost * 3})">x3</button>
+                <button class="btn btn-small btn-green" style="grid-column: 1 / -1;" onclick="processCaseOpen('${c.id}', 5, ${c.cost * 5})">x5</button>
+            </div>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+function getRandomPetByRarity(rarityKey) {
+    let possible = petDB.filter(p => p.rarity === rarityKey);
+    return possible[Math.floor(Math.random() * possible.length)];
+}
+
+function processCaseOpen(caseId, amount, cost) {
+    const c = casesDB.find(x => x.id === caseId);
+    if(state.diamonds < cost) { return; }
+    state.diamonds -= cost; updateHUD(); executeCaseRoll(c, amount);
+}
+
+function executeCaseRoll(c, amount) {
+    closeMenu('cases-menu'); sounds.open();
+    isMenuOpen = true; pendingPetRewards = [];
+    for(let i=0; i<amount; i++) {
+        let r = Math.random() * 100;
+        let sum = 0; let wonRarity = 'common';
+        for(let [rarity, chance] of Object.entries(c.drops)) {
+            if(chance <= 0) continue;
+            sum += chance; if(r <= sum) { wonRarity = rarity; break; }
+        }
+        pendingPetRewards.push(getRandomPetByRarity(wonRarity));
+    }
+    if(amount <= 2) { showRoulette(pendingPetRewards[0]); } else { showFastRewards(pendingPetRewards); }
+}
+
+function showRoulette(wonPet) {
+    document.getElementById('roulette-overlay').classList.add('active');
+    const track = document.getElementById('roulette-track');
+    track.style.transition = 'none'; track.style.transform = 'translateX(0)'; track.innerHTML = '';
+    const itemsCount = state.settings.graphics === 'low' ? 10 : 20; const winIndex = state.settings.graphics === 'low' ? 8 : 15;
+    for(let i=0; i<itemsCount; i++) {
+        let fakePet = i === winIndex ? wonPet : getRandomPetByRarity(Object.keys(rarities)[Math.floor(Math.random()*Object.keys(rarities).length)]);
+        let rInfo = rarities[fakePet.rarity];
+        let el = document.createElement('div'); el.className = 'roulette-item'; el.style.borderColor = rInfo.color;
+        el.innerHTML = `<div style="font-family: 'Segoe UI Emoji', sans-serif;">${getPetIcon(fakePet)}</div><span style="color:${rInfo.color}">${getPetName(fakePet)}</span>`;
+        track.appendChild(el);
+    }
+    document.getElementById('btn-claim-pet').style.display = 'none'; document.getElementById('roulette-result').innerHTML = '';
+    setTimeout(() => {
+        track.style.transition = `transform ${state.settings.graphics === 'low' ? 1.5 : 3}s cubic-bezier(0.15, 0.85, 0.15, 1)`;
+        let offset = (winIndex * 110) - (document.querySelector('.roulette-container').clientWidth / 2) + 55;
+        track.style.transform = `translateX(-${offset}px)`;
+
+        setTimeout(() => {
+            sounds.win();
+            track.children[winIndex].style.boxShadow = `inset 0 0 20px ${rarities[wonPet.rarity].color}`;
+            document.getElementById('roulette-result').innerHTML = `You got <b style="color:${rarities[wonPet.rarity].color}">${getPetName(wonPet)}</b>!`;
+            if(pendingPetRewards.length > 1) { document.getElementById('roulette-result').innerHTML += `<br><span style="font-size:16px;">(+${pendingPetRewards.length-1} more pets in inventory)</span>`; }
+            document.getElementById('btn-claim-pet').style.display = 'inline-block';
+        }, state.settings.graphics === 'low' ? 1500 : 3000);
+    }, 50);
+}
+
+function showFastRewards(pets) {
+    document.getElementById('fast-result-overlay').classList.add('active');
+    const grid = document.getElementById('fast-reward-grid'); grid.innerHTML = '';
+    pets.forEach((pet, i) => {
+        setTimeout(() => {
+            let rInfo = rarities[pet.rarity];
+            let div = document.createElement('div'); div.className = 'fast-reward-item'; div.style.borderColor = rInfo.color; div.style.boxShadow = `0 0 10px ${rInfo.color}`;
+            div.innerHTML = `<div style="font-size:40px; font-family: 'Segoe UI Emoji', sans-serif;">${getPetIcon(pet)}</div><strong style="color:${rInfo.color}">${getPetName(pet)}</strong>`;
+            grid.appendChild(div); sounds.win();
+        }, i * (state.settings.graphics === 'low' ? 50 : 200));
+    });
+}
+
+function claimPet() { savePendingPets(); closeMenu('roulette-overlay'); openMenu('cases-menu'); }
+function claimFastPets() { savePendingPets(); closeMenu('fast-result-overlay'); openMenu('cases-menu'); }
+
+function savePendingPets() {
+    pendingPetRewards.forEach(pet => {
+        let newInstance = { ...pet, instanceId: Date.now().toString() + Math.random().toString(36).substr(2, 5) };
+        state.pets.push(newInstance);
+    });
+    pendingPetRewards = []; saveGame(); updateInventoryUI();
+}
+
+/** INVENTORY & SLOTS SYSTEM */
+function updateInventoryUI() {
+    const grid = document.getElementById('inventory-grid'); grid.innerHTML = '';
+    let buffsText = T('none'); let b = getActivePetStats();
+
+    state.equippedPetIds = state.equippedPetIds.filter(id => state.pets.some(p => p.instanceId === id));
+    if(state.equippedPetIds.length > 0) { buffsText = `+${b.dmg} DMG, +${b.mult.toFixed(1)}x Gems`; }
+
+    document.getElementById('active-pet-buffs').innerText = buffsText;
+    document.getElementById('slots-counter').innerText = `${T('slots')}: ${state.equippedPetIds.length} / ${state.unlockedPetSlots}`;
+
+    if(state.pets.length === 0) { grid.innerHTML = "<p style='color:#888; grid-column: 1/-1;'>No pets yet. Open cases to find some!</p>"; return; }
+
+    const rarityOrder = { legendary: 5, mythic: 4, epic: 3, rare: 2, common: 1 };
+    let sortedPets = [...state.pets].sort((a, b) => {
+        let eqA = state.equippedPetIds.includes(a.instanceId) ? 1 : 0; let eqB = state.equippedPetIds.includes(b.instanceId) ? 1 : 0;
+        if(eqA !== eqB) return eqB - eqA;
+        return rarityOrder[b.rarity] - rarityOrder[a.rarity];
+    });
+
+    sortedPets.forEach(pet => {
+        let rInfo = rarities[pet.rarity]; const div = document.createElement('div'); const isEq = state.equippedPetIds.includes(pet.instanceId);
+        div.className = `pet-card ${isEq ? 'equipped' : ''}`; div.style.borderColor = rInfo.color;
+        div.innerHTML = `
+            <div class="pet-img" style="font-family: 'Segoe UI Emoji', sans-serif;">${getPetIcon(pet)}</div>
+            <strong style="color: ${rInfo.color}">${getPetName(pet)}</strong>
+            <div class="pet-stats">Gems: +${(rInfo.mult - 1).toFixed(1)}x | DMG: +${rInfo.dmg}</div>
+            <button class="btn ${isEq ? 'btn-orange' : 'btn-green'}" style="width:100%; margin-top:10px; padding: 5px;" onclick="equipPet('${pet.instanceId}')">${isEq ? T('unequip') : T('equip')}</button>
+        `;
+        grid.appendChild(div);
+    });
+}
+
+function equipPet(instanceId) {
+    const index = state.equippedPetIds.indexOf(instanceId);
+    if(index > -1) { state.equippedPetIds.splice(index, 1); }
+    else {
+        if(state.equippedPetIds.length < state.unlockedPetSlots) { state.equippedPetIds.push(instanceId); }
+        else { return; }
+    }
+    updateInventoryUI(); updateHUD(); saveGame();
+}
+
+/** GAME LOOP */
+function loop() { updatePhysics(); draw(); requestAnimationFrame(loop); }
+
+// Init run
+loadGame();
+loop(); // Обязательно вызываем луп
+</script>
+</body>
+</html>
