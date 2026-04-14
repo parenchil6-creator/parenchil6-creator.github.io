@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5130806594080911"
-     crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5130806594080911" crossorigin="anonymous"></script>
     <link rel="icon" href="tt.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -28,15 +27,16 @@
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
-            font-family: 'Segoe UI', 'Segoe UI Emoji', 'Apple Color Emoji', Tahoma, sans-serif;
-            margin: 0; padding: 0;
+            font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            padding: 0;
         }
         body, html { width: 100vw; height: 100vh; background-color: var(--bg-color); overflow: hidden; }
         canvas { display: block; width: 100vw; height: 100vh; image-rendering: pixelated; touch-action: none; }
 
         /* UI Elements */
         .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
-        .hud { padding: 15px; display: flex; justify-content: space-between; pointer-events: auto; }
+        .hud { padding: 15px; display: flex; justify-content: space-between; pointer-events: auto; z-index: 20; position: relative; }
         .stats { background: var(--ui-bg); padding: 10px 20px; border-radius: 8px; color: var(--text-main); border: 2px solid #333; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-wrap: wrap; gap: 15px; font-weight: bold; align-items: center; }
         .stat-item { display: flex; align-items: center; gap: 8px; }
 
@@ -51,11 +51,20 @@
         .btn-purple { background: #ab47bc; color: white;} .btn-purple:hover { background: #8e24aa; }
         .btn-orange { background: #ffa726; color: black;} .btn-orange:hover { background: #fb8c00; }
         .btn-cyan { background: #00e5ff; color: black;} .btn-cyan:hover { background: #00b8d4; }
+        .btn-blue { background: #2196f3; color: white;} .btn-blue:hover { background: #1976d2; }
         .btn-gold { background: #ffd700; color: black;} .btn-gold:hover { background: #ffea00; box-shadow: 0 0 10px #ffd700; }
         .btn-small { padding: 6px 10px; font-size: 12px; }
 
-        /* Кнопки-иконки для верхнего меню */
         .btn-icon { padding: 8px 12px; font-size: 22px; display: flex; justify-content: center; align-items: center; border-radius: 8px; }
+
+        /* Floating Promo Text */
+        .promo-text {
+            position: absolute; top: 80px; left: 15px; color: rgba(255,255,255,0.8);
+            font-size: 12px; max-width: 250px; pointer-events: none; z-index: 10;
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
+            border-left: 3px solid var(--accent); text-shadow: 1px 1px 2px #000;
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+        }
 
         /* Menus */
         .menu-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; pointer-events: auto; z-index: 100; opacity: 0; visibility: hidden; transition: opacity 0.3s; }
@@ -92,37 +101,25 @@
         .fast-reward-item { background: #222; border: 2px solid; border-radius: 8px; padding: 15px; text-align: center; animation: popIn 0.3s ease-out; }
         @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
-        /* Mobile Controls - СДЕЛАНО АККУРАТНО */
+        /* Mobile Controls */
         .mobile-controls {
-            display: none;
-            padding: 15px 20px 35px 20px;
-            justify-content: space-between;
-            align-items: flex-end;
-            pointer-events: none;
-            position: absolute;
-            bottom: 0; width: 100%;
-            z-index: 10; touch-action: none;
+            display: none; padding: 15px 20px 35px 20px; justify-content: space-between; align-items: flex-end;
+            pointer-events: none; position: absolute; bottom: 0; width: 100%; z-index: 10; touch-action: none;
         }
         .d-pad, .action-btn { pointer-events: auto; }
         .d-pad { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 6px; }
 
         .ctrl-btn {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 20px; display: flex; justify-content: center; align-items: center; user-select: none;
-            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%;
+            color: rgba(255, 255, 255, 0.7); font-size: 20px; display: flex; justify-content: center; align-items: center;
+            user-select: none; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
         }
         .ctrl-btn:active { background: rgba(255, 255, 255, 0.3); color: white; border-color: rgba(255, 255, 255, 0.4); }
         .up { grid-column: 2; grid-row: 1; } .left { grid-column: 1; grid-row: 2; } .right { grid-column: 3; grid-row: 2; } .down { grid-column: 2; grid-row: 3; }
 
         .action-btn .ctrl-btn {
-            width: 70px; height: 70px;
-            background: rgba(79, 195, 247, 0.25);
-            border-color: rgba(79, 195, 247, 0.4);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            font-size: 28px; color: white;
+            width: 70px; height: 70px; background: rgba(79, 195, 247, 0.25); border-color: rgba(79, 195, 247, 0.4);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 28px; color: white;
         }
         .action-btn .ctrl-btn:active { background: rgba(79, 195, 247, 0.5); }
 
@@ -137,15 +134,13 @@
             .hud { flex-direction: column; gap: 8px; padding: 10px; align-items: stretch; }
             .stats { padding: 8px; gap: 10px; justify-content: space-around; flex-wrap: wrap; border-width: 1px; }
             .stat-item { font-size: 13px; gap: 4px; }
-
             .top-buttons { justify-content: center; flex-wrap: nowrap; gap: 6px; }
             .top-buttons .btn-icon { flex: 1; padding: 8px 0; font-size: 20px; }
-
+            .promo-text { top: 120px; font-size: 10px; max-width: 200px; padding: 8px; }
             .menu-box { padding: 15px; min-width: 95vw; width: 95vw; gap: 10px; border-radius: 8px; }
             .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
             .shop-item, .case-item, .upgrade-card { padding: 10px; }
             .case-buttons { grid-template-columns: 1fr; }
-
             .d-pad { grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(3, 45px); gap: 5px; }
             .ctrl-btn { font-size: 18px; }
             .action-btn .ctrl-btn { width: 65px; height: 65px; font-size: 26px; }
@@ -156,106 +151,115 @@
 
     <div class="menu-overlay active" id="platform-menu">
         <div class="menu-box">
-            <h2 data-lang="platform_title">Выбор Платформы</h2>
-            <p style="color: #aaa; margin-bottom: 10px;" data-lang="platform_desc">Выберите устройство для удобного управления</p>
-            <button class="btn btn-purple" onclick="setPlatform('pc')">💻 ПК (Клавиатура и Мышь)</button>
-            <button class="btn btn-orange" onclick="setPlatform('mobile')">📱 Мобильный (Сенсор)</button>
+            <h2 data-lang="platform_title">Select Platform</h2>
+            <p style="color: #aaa; margin-bottom: 10px;" data-lang="platform_desc">Choose your device for comfortable controls</p>
+            <button class="btn btn-purple" onclick="setPlatform('pc')">💻 PC (Keyboard/Mouse)</button>
+            <button class="btn btn-orange" onclick="setPlatform('mobile')">📱 Mobile (Touch)</button>
+        </div>
+    </div>
+
+    <div class="menu-overlay" id="locations-menu">
+        <div class="menu-box" style="max-width: 700px;">
+            <h2 data-lang="teleportTitle">Teleport</h2>
+            <p style="color: #aaa; font-size: 14px;" data-lang="teleportDesc">Travel between unlocked biomes!</p>
+            <div class="menu-grid" id="locations-grid"></div>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('locations-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="rebirth-menu">
         <div class="menu-box" style="max-width: 600px;">
-            <h2 data-lang="rebirthMenuTitle">🔥 Перерождения</h2>
-            <p style="color: #aaa; font-size: 14px;" data-lang="rebirthMenuDesc">Сбросьте весь прогресс, чтобы получить вечный множитель алмазов!</p>
+            <h2 data-lang="rebirthMenuTitle">🔥 Rebirths</h2>
+            <p style="color: #aaa; font-size: 14px;" data-lang="rebirthMenuDesc">Reset ALL progress to get a permanent diamond multiplier!</p>
             <div id="rebirth-info" style="margin: 20px 0; font-size: 18px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px solid #ffea00;"></div>
-            <button class="btn btn-gold" id="btn-do-rebirth" onclick="doRebirth()" data-lang="doRebirth">Переродиться</button>
-            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('rebirth-menu')" data-lang="close">Закрыть</button>
+            <button class="btn btn-gold" id="btn-do-rebirth" onclick="doRebirth()" data-lang="doRebirth">Rebirth Now</button>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('rebirth-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="shop-menu">
         <div class="menu-box">
-            <h2 data-lang="shopTitle">Магазин и Кузница</h2>
+            <h2 data-lang="shopTitle">Shop & Blacksmith</h2>
             <div class="menu-grid">
                 <div class="shop-item">
-                    <strong data-lang="pickaxePower">Сила Кирки</strong>
-                    <span style="font-size: 0.8em; color: #aaa;" data-lang="pickaxeDesc">Ломайте блоки быстрее</span>
-                    <button class="btn" id="btn-buy-pick" onclick="buyPickaxe()" data-lang="buy">Купить</button>
+                    <strong data-lang="pickaxePower">Pickaxe Power</strong>
+                    <span style="font-size: 0.8em; color: #aaa;" data-lang="pickaxeDesc">Break blocks faster</span>
+                    <button class="btn" id="btn-buy-pick" onclick="buyPickaxe()" data-lang="buy">Buy</button>
                 </div>
                 <div class="shop-item" style="border-color: var(--accent);">
-                    <strong data-lang="newLoc">Новая Локация</strong>
+                    <strong data-lang="newLoc">Unlock Location</strong>
                     <span id="text-loc-name-disp" style="color: var(--accent);">Desert (30 💎)</span>
-                    <button class="btn" id="btn-buy-loc" onclick="buyLocation()" data-lang="travel">Отправиться</button>
+                    <button class="btn" id="btn-buy-loc" onclick="buyLocation()" data-lang="buy">Buy</button>
                 </div>
             </div>
-            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('shop-menu')" data-lang="close">Закрыть</button>
+            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('shop-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="upgrades-menu">
         <div class="menu-box" style="max-width: 800px;">
-            <h2 data-lang="upgradesTitle">✨ Специальные Улучшения</h2>
-            <p style="color: #aaa; font-size: 14px;" data-lang="upgradesDesc">Улучшайте способности персонажа за алмазы!</p>
+            <h2 data-lang="upgradesTitle">✨ Special Upgrades</h2>
+            <p style="color: #aaa; font-size: 14px;" data-lang="upgradesDesc">Upgrade character abilities with diamonds!</p>
             <div class="menu-grid" id="upgrades-content" style="margin-top: 10px;"></div>
-            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('upgrades-menu')" data-lang="close">Закрыть</button>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 10px;" onclick="closeMenu('upgrades-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="cases-menu">
         <div class="menu-box" style="max-width: 900px;">
-            <h2 data-lang="casesTitle">Кейсы Питомцев</h2>
+            <h2 data-lang="casesTitle">Pet Cases</h2>
             <div class="menu-grid" id="cases-grid"></div>
-            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('cases-menu')" data-lang="close">Закрыть</button>
+            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('cases-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="roulette-overlay" style="z-index: 150;">
         <div class="menu-box" style="width: 90vw; max-width: 600px;">
-            <h2 id="roulette-title" data-lang="opening">Открываем...</h2>
+            <h2 id="roulette-title" data-lang="opening">Opening...</h2>
             <div class="roulette-container">
                 <div class="roulette-line"></div>
                 <div class="roulette-track" id="roulette-track"></div>
             </div>
             <div id="roulette-result" style="font-size: 24px; font-weight: bold; min-height: 40px;"></div>
-            <button class="btn btn-green" id="btn-claim-pet" style="display: none;" onclick="claimPet()" data-lang="claimPet">Забрать Питомца!</button>
+            <button class="btn btn-green" id="btn-claim-pet" style="display: none;" onclick="claimPet()" data-lang="claimPet">Claim Pet!</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="fast-result-overlay" style="z-index: 150;">
         <div class="menu-box" style="width: 90vw; max-width: 800px;">
-            <h2 data-lang="results">Результаты Кейса</h2>
+            <h2 data-lang="results">Case Results</h2>
             <div class="fast-reward-grid" id="fast-reward-grid"></div>
-            <button class="btn btn-green" onclick="claimFastPets()" data-lang="claimAll">Забрать Всех!</button>
+            <button class="btn btn-green" onclick="claimFastPets()" data-lang="claimAll">Claim All!</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="inv-menu">
         <div class="menu-box" style="width: 90vw; max-width: 900px;">
-            <h2 data-lang="invTitle">Инвентарь и Питомцы</h2>
+            <h2 data-lang="invTitle">Inventory & Pets</h2>
             <div class="slots-info">
                 <div style="text-align: left;">
-                    <strong style="color:var(--accent);" data-lang="activeBuffs">Активные Баффы: </strong><br>
+                    <strong style="color:var(--accent);" data-lang="activeBuffs">Active Buffs: </strong><br>
                     <span id="active-pet-buffs" style="font-size: 14px;">None</span>
                 </div>
                 <div id="slots-counter" style="font-weight: bold; font-size: 18px;">Slots: 0 / 3</div>
             </div>
             <div class="menu-grid" id="inventory-grid" style="margin-top: 10px; max-height: 50vh; overflow-y: auto;"></div>
-            <button class="btn" style="background: #e53935; color: white; margin-top: 20px;" onclick="closeMenu('inv-menu')" data-lang="close">Закрыть</button>
+            <button class="btn" style="background: #e53935; color: white; margin-top: 20px;" onclick="closeMenu('inv-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
     <div class="menu-overlay" id="settings-menu">
         <div class="menu-box">
-            <h2 data-lang="settingsTitle">Настройки и Оптимизация</h2>
-            <p style="color: #ccc; font-size: 12px; margin-bottom: 10px;" data-lang="lagDesc">Если игра лагает, уменьшите графику до LOW</p>
+            <h2 data-lang="settingsTitle">Settings & Optimization</h2>
+            <p style="color: #ccc; font-size: 12px; margin-bottom: 10px;" data-lang="lagDesc">If the game lags, lower graphics to LOW</p>
             <div class="shop-item">
-                <button class="btn btn-orange" id="btn-toggle-lang" onclick="toggleLang()">Язык: RU</button>
+                <button class="btn btn-orange" id="btn-toggle-lang" onclick="toggleLang()">Language: EN</button>
                 <button class="btn" id="btn-toggle-sound" onclick="toggleSound()">Sound: ON</button>
                 <button class="btn btn-cyan" id="btn-toggle-graphics" onclick="toggleGraphics()">Graphics: HIGH</button>
-                <button class="btn btn-green" onclick="forceSave()" style="margin-top:20px;" data-lang="save">💾 Сохранить Игру</button>
-                <button class="btn" onclick="resetSave()" style="background: darkred; color: white; margin-top:10px;" data-lang="reset">Сбросить ВСЕ сохранения</button>
+                <button class="btn btn-green" onclick="forceSave()" style="margin-top:20px;" data-lang="save">💾 Save Game</button>
+                <button class="btn" onclick="resetSave()" style="background: darkred; color: white; margin-top:10px;" data-lang="reset">Reset ALL Save Data</button>
             </div>
-            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('settings-menu')" data-lang="close">Закрыть</button>
+            <button class="btn" style="background: #e53935; color: white;" onclick="closeMenu('settings-menu')" data-lang="close">Close</button>
         </div>
     </div>
 
@@ -270,13 +274,14 @@
                     <span id="ui-diamonds">0</span>
                     <span id="ui-mult-display" style="color: #00e5ff; font-size: 0.8em; margin-left: 3px;">(x1.0)</span>
                 </div>
-                <div class="stat-item"><span data-lang="lvl">Ур.</span><span id="ui-pickaxe">1</span></div>
-                <div class="stat-item"><span data-lang="depth">Глубина:</span><span id="ui-depth">0m</span></div>
-                <div class="stat-item" style="color:#ff9800;"><span data-lang="combo">Комбо:</span><span id="ui-combo">0</span></div>
+                <div class="stat-item"><span data-lang="lvl">Lv.</span><span id="ui-pickaxe">1</span></div>
+                <div class="stat-item"><span data-lang="depth">Depth:</span><span id="ui-depth">0m</span></div>
+                <div class="stat-item" style="color:#ff9800;"><span data-lang="combo">Combo:</span><span id="ui-combo">0</span></div>
             </div>
 
             <div class="top-buttons">
                 <button class="btn btn-icon" onclick="openMenu('shop-menu')" title="Магазин">🛒</button>
+                <button class="btn btn-icon btn-blue" onclick="openMenu('locations-menu')" title="Телепорт">🌍</button>
                 <button class="btn btn-icon btn-cyan" onclick="openMenu('upgrades-menu')" title="Улучшения">✨</button>
                 <button class="btn btn-icon btn-purple" onclick="openMenu('cases-menu')" title="Кейсы">🎁</button>
                 <button class="btn btn-icon btn-green" onclick="openMenu('inv-menu')" title="Питомцы">🐾</button>
@@ -284,6 +289,11 @@
                 <button class="btn btn-icon" style="background:#555; color:white;" onclick="openMenu('settings-menu')" title="Настройки">⚙️</button>
             </div>
         </div>
+
+        <div class="promo-text">
+            <i data-lang="psText">P.S. The more players play this, the faster the updates will be!</i>
+        </div>
+
         <div class="mobile-controls" id="mobile-ui">
             <div class="d-pad">
                 <div class="ctrl-btn up" id="m-up">△</div>
@@ -323,13 +333,15 @@ const locales = {
     ru: {
         platform_title: "Выбор Платформы", platform_desc: "Выберите устройство для удобного управления",
         settingsTitle: "Настройки и Оптимизация", lagDesc: "Если игра лагает, уменьшите графику до LOW", save: "💾 Сохранить Игру", reset: "Сбросить ВСЕ сохранения", close: "Закрыть",
-        shopTitle: "Магазин и Кузница", pickaxePower: "Сила Кирки", pickaxeDesc: "Ломайте блоки быстрее", buy: "Купить", newLoc: "Новая Локация", travel: "Отправиться",
+        shopTitle: "Магазин и Кузница", pickaxePower: "Сила Кирки", pickaxeDesc: "Ломайте блоки быстрее", buy: "Купить", newLoc: "Новая Локация",
+        teleportTitle: "Телепорт", teleportDesc: "Перемещайтесь между открытыми биомами!", teleportBtn: "Туда!",
         upgradesTitle: "✨ Специальные Улучшения", upgradesDesc: "Улучшайте способности персонажа за алмазы!", casesTitle: "Кейсы Питомцев",
         rebirthMenuTitle: "🔥 Перерождения", rebirthMenuDesc: "Сбросьте весь прогресс, чтобы получить вечный множитель алмазов!", doRebirth: "Переродиться", maxRebirth: "МАКСИМУМ ПЕРЕРОЖДЕНИЙ",
         current: "Текущий", willBe: "Будет", cost: "Цена", invTitle: "Инвентарь и Питомцы", activeBuffs: "Активные Баффы:", none: "Нет", slots: "Слоты",
         claimPet: "Забрать!", claimAll: "Забрать Всех!", opening: "Открываем...", results: "Результаты Кейса", equip: "Надеть", unequip: "Снять", lvl: "Ур.", depth: "Глубина:", combo: "Комбо:",
         lang: "Язык: RU", confirmRebirth: "Вы уверены? Весь прогресс (кроме перерождений) будет сброшен!", rebirthSuccess: "Перерождение успешно!", max: "МАКС", basicText: "Базовый",
         biomeNames: ["Лес", "Пустыня", "Ледяные Глубины", "Вулкан", "Преисподняя", "Кристальные Пещеры", "Бездна"],
+        psText: "P.S. Чем больше игроков играет в это, тем быстрее будут выходить обновления!",
         upgrades_gemMult: { name: "Алмазный Буст", desc: "Увеличивает множитель алмазов" },
         upgrades_reach: { name: "Длинная Рука", desc: "Дистанция копания (блоков)" },
         upgrades_critChance: { name: "Точный Удар", desc: "Шанс критического удара" },
@@ -338,13 +350,15 @@ const locales = {
     en: {
         platform_title: "Select Platform", platform_desc: "Choose your device for comfortable controls",
         settingsTitle: "Settings & Optimization", lagDesc: "If the game lags, lower graphics to LOW", save: "💾 Save Game", reset: "Reset ALL Save Data", close: "Close",
-        shopTitle: "Shop & Blacksmith", pickaxePower: "Pickaxe Power", pickaxeDesc: "Break blocks faster", buy: "Buy", newLoc: "New Location", travel: "Travel",
+        shopTitle: "Shop & Blacksmith", pickaxePower: "Pickaxe Power", pickaxeDesc: "Break blocks faster", buy: "Buy", newLoc: "Unlock Location",
+        teleportTitle: "Teleport", teleportDesc: "Travel between unlocked biomes!", teleportBtn: "Travel",
         upgradesTitle: "✨ Special Upgrades", upgradesDesc: "Upgrade character abilities with diamonds!", casesTitle: "Pet Cases",
         rebirthMenuTitle: "🔥 Rebirths", rebirthMenuDesc: "Reset ALL progress to get a permanent diamond multiplier!", doRebirth: "Rebirth Now", maxRebirth: "MAX REBIRTH",
         current: "Current", willBe: "Will be", cost: "Cost", invTitle: "Inventory & Pets", activeBuffs: "Active Buffs:", none: "None", slots: "Slots",
         claimPet: "Claim Pet!", claimAll: "Claim All!", opening: "Opening...", results: "Case Results", equip: "Equip", unequip: "Unequip", lvl: "Lv.", depth: "Depth:", combo: "Combo:",
         lang: "Language: EN", confirmRebirth: "Are you sure? ALL progress (except rebirths) will be reset!", rebirthSuccess: "Rebirth successful!", max: "MAX", basicText: "Basic",
         biomeNames: ["Forest", "Desert", "Ice Depths", "Volcano", "Underworld", "Crystal Caves", "Abyss"],
+        psText: "P.S. The more players play this, the faster the updates will be!",
         upgrades_gemMult: { name: "Diamond Boost", desc: "Increases diamond multiplier" },
         upgrades_reach: { name: "Long Reach", desc: "Mining distance (blocks)" },
         upgrades_critChance: { name: "Precision Strike", desc: "Critical hit chance" },
@@ -356,7 +370,7 @@ function T(key) { return locales[state.lang][key] || key; }
 
 function toggleLang() {
     state.lang = state.lang === 'ru' ? 'en' : 'ru';
-    updateLangUI(); updateHUD(); updateInventoryUI(); updateUpgradesUI(); buildCasesUI(); updateRebirthUI(); saveGame();
+    updateLangUI(); updateHUD(); updateInventoryUI(); updateUpgradesUI(); buildCasesUI(); updateRebirthUI(); updateLocationsUI(); saveGame();
 }
 
 function updateLangUI() {
@@ -374,7 +388,6 @@ const biomes = [
     { bg: '#2a002a', sky: false, grass: '#da70d6', dirt: '#800080', stone: '#4b0082', hardstone: '#29004f', loot: 0.35, hardness: 1.5, cost: 3000 },
     { bg: '#00001a', sky: false, grass: '#00008b', dirt: '#0000cd', stone: '#000044', hardstone: '#000022', loot: 0.5, hardness: 2.2, cost: 8000 }
 ];
-
 const rarities = {
     common: { color: "var(--rarity-common)", chance: 60, mult: 1.3, dmg: 1 },
     rare: { color: "var(--rarity-rare)", chance: 25, mult: 1.6, dmg: 2 },
@@ -382,7 +395,6 @@ const rarities = {
     mythic: { color: "var(--rarity-mythic)", chance: 4, mult: 4.0, dmg: 5 },
     legendary: { color: "var(--rarity-legendary)", chance: 1, mult: 6.0, dmg: 10 }
 };
-
 const petDB = [
     { id: 'p1', name: "Rock Slime", icon: "🪨", rarity: "common" }, { id: 'p2', name: "Dirt Worm", icon: "🐛", rarity: "common" },
     { id: 'p3', name: "Crystal Bat", icon: "🦇", rarity: "rare" }, { id: 'p4', name: "Mole Miner", icon: "🐹", rarity: "rare" },
@@ -390,36 +402,31 @@ const petDB = [
     { id: 'p7', name: "Earth Golem", icon: "🗿", rarity: "mythic" }, { id: 'p8', name: "Diamond Dragon", icon: "🐲", rarity: "legendary" },
     { id: 'p9', name: "Cosmic Core", icon: "🌌", rarity: "legendary" }
 ];
-
 const casesDB = [
-    { id: 'c1', name: "Basic Case", cost: 20, drops: { common: 60, rare: 30, epic: 9, mythic: 1, legendary: 0 } },
-    { id: 'c2', name: "Pro Case", cost: 100, drops: { common: 0, rare: 50, epic: 35, mythic: 12, legendary: 3 } },
-    { id: 'c3', name: "God Case", cost: 500, drops: { common: 0, rare: 0, epic: 50, mythic: 35, legendary: 15 } }
+    { id: 'c1', name: "Basic Case", cost: 20, drops: { common: 75, rare: 20, epic: 4.5, mythic: 0.5, legendary: 0 } },
+    { id: 'c2', name: "Pro Case", cost: 100, drops: { common: 0, rare: 75, epic: 20, mythic: 4.5, legendary: 0.5 } },
+    { id: 'c3', name: "God Case", cost: 500, drops: { common: 0, rare: 0, epic: 75, mythic: 20, legendary: 5 } }
 ];
-
 const upgradesDB = {
     gemMult: { icon: "💎", levels: [ {cost: 20, val: 0.2, text: "+0.2x"}, {cost: 100, val: 0.7, text: "+0.7x"}, {cost: 500, val: 1.5, text: "+1.5x"}, {cost: 2500, val: 3.5, text: "+3.5x"}, {cost: 10000, val: 8.0, text: "+8.0x"} ] },
     reach: { icon: "🦾", levels: [ {cost: 200, val: 2.0, text: "2.0"}, {cost: 1500, val: 2.5, text: "2.5"}, {cost: 5000, val: 3.0, text: "3.0"} ] },
     critChance: { icon: "🎯", levels: [ {cost: 150, val: 0.15, text: "15%"}, {cost: 800, val: 0.20, text: "20%"}, {cost: 3000, val: 0.30, text: "30%"}, {cost: 10000, val: 0.40, text: "40%"} ] },
     critMult: { icon: "💥", levels: [ {cost: 300, val: 3.0, text: "x3.0"}, {cost: 2000, val: 4.0, text: "x4.0"}, {cost: 8000, val: 5.0, text: "x5.0"} ] }
 };
-
 const rebirthsDB = [
     { cost: 500, mult: 1.5 }, { cost: 5000, mult: 2.5 }, { cost: 10000, mult: 3.5 }, { cost: 50000, mult: 6.0 }, { cost: 100000, mult: 10.0 }
 ];
-
 const blockHp = { dirt: 2, stone: 6, hardstone: 15, diamond: 10 };
 const TS = 40;
 
 /** GLOBAL STATE */
 let state = {
-    diamonds: 1, pickaxeLevel: 1, pickaxePower: 1, pickaxeCost: 5, currentLocIndex: 0,
+    diamonds: 1, pickaxeLevel: 1, pickaxePower: 1, pickaxeCost: 5, currentLocIndex: 0, maxLocIndex: 0,
     pets: [], equippedPetIds: [], unlockedPetSlots: 3, combo: 0,
     upgrades: { gemMult: 0, reach: 0, critChance: 0, critMult: 0 },
     settings: { sound: true, graphics: 'high' },
-    rebirths: 0, lang: 'ru'
+    rebirths: 0, lang: 'en'
 };
-
 let gameStarted = false; let isMobileMode = false; let comboTimer = 0; let isMenuOpen = false; let pendingPetRewards = [];
 const keys = { w: false, a: false, s: false, d: false, justPressedW: false, space: false };
 const player = { x: 0, y: 120, vx: 0, vy: 0, w: 30, h: 36, speed: 4, jump: -8.5, grounded: false, facingRight: true, swingTimer: 0, reach: 1.5 };
@@ -440,14 +447,13 @@ function loadGame() {
             state = { ...state, ...parsed };
         } catch(e) { console.error("Save corrupted", e); }
     }
-
-    // Безопасное восстановление, если старое сохранение не имело этих параметров (Фикс бага на iOS)
     if(!state.settings) state.settings = { sound: true, graphics: 'high' };
     if(!state.settings.graphics) state.settings.graphics = 'high';
     if(state.settings.sound === undefined) state.settings.sound = true;
     if(!state.upgrades) state.upgrades = { gemMult: 0, reach: 0, critChance: 0, critMult: 0 };
     if(state.rebirths === undefined) state.rebirths = 0;
-    if(state.lang === undefined) state.lang = 'ru';
+    if(state.lang === undefined) state.lang = 'en';
+    if(state.maxLocIndex === undefined) state.maxLocIndex = state.currentLocIndex || 0;
 
     state.pickaxePower = state.pickaxeLevel;
     updateLangUI();
@@ -462,35 +468,26 @@ setInterval(saveGame, 5000);
 
 /** CORE INIT */
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d'); // Убрал alpha: false для совместимости с Safari iOS
+const ctx = canvas.getContext('2d');
 let width, height, camera = { x: 0, y: 0 };
-
 function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
 window.addEventListener('resize', resize); resize();
-
 function setPlatform(platform) {
     document.getElementById('platform-menu').classList.remove('active');
-
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    loadGame(); // Теперь 100% безопасно
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+    loadGame();
     gameStarted = true;
-
     if (platform === 'mobile') {
         isMobileMode = true;
         document.getElementById('mobile-ui').style.display = 'flex';
     }
-
-    updateHUD(); buildCasesUI(); updateInventoryUI(); updateUpgradesUI(); updateRebirthUI();
+    updateHUD(); buildCasesUI(); updateInventoryUI(); updateUpgradesUI(); updateRebirthUI(); updateLocationsUI();
 }
 
 /** WORLD GENERATION */
 function getBlock(bx, by) {
     if (bx < -30 || bx > 30 || by > 300) return { type: 'barrier', unbreakable: true };
     if (by < 5) return null;
-
     const key = `${bx},${by}`;
     if (world[key]) { if (world[key].type === 'air') return null; return world[key]; }
 
@@ -584,10 +581,26 @@ function getPlayerReach() {
 
 function doMineAction() {
     if (player.swingTimer > 0) return;
-    let bx = Math.floor((player.x + player.w/2) / TS);
-    let by = Math.floor((player.y + player.h/2) / TS);
-    if (keys.s) { by += 1; } else { bx += player.facingRight ? 1 : -1; }
-    executeMine(bx, by);
+    let px = Math.floor((player.x + player.w/2) / TS);
+    let py = Math.floor((player.y + player.h/2) / TS);
+
+    let frontX = px + (player.facingRight ? 1 : -1);
+    let frontY = py;
+    let downX = px;
+    let downY = py + 1;
+
+    if (keys.s) { executeMine(downX, downY); return; }
+    if (keys.w) { executeMine(px, py - 1); return; }
+
+    let frontBlock = getBlock(frontX, frontY);
+    if (frontBlock && frontBlock.type !== 'air' && !frontBlock.unbreakable) {
+        executeMine(frontX, frontY);
+    } else {
+        let downBlock = getBlock(downX, downY);
+        if (downBlock && downBlock.type !== 'air' && !downBlock.unbreakable) {
+            executeMine(downX, downY);
+        }
+    }
 }
 
 function mineBlockByCoords(screenX, screenY) {
@@ -741,7 +754,8 @@ function draw() {
         ctx.fillStyle = '#795548'; ctx.fillRect(px + (player.facingRight ? 24 : 2), py + 16, 4, 15);
     }
 
-    ctx.font = "24px 'Segoe UI Emoji', Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "24px 'Apple Color Emoji', 'Segoe UI Emoji', Arial";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
     visualPets.forEach(vp => {
         if(state.settings.graphics === 'high') { ctx.shadowBlur = 15; ctx.shadowColor = vp.color; } else { ctx.shadowBlur = 0; }
         ctx.fillText(vp.icon, vp.x, vp.y);
@@ -755,8 +769,7 @@ function draw() {
         let depthRatio = Math.min(1, (camera.y - 200) / 1000);
         if(!biome.sky) depthRatio = 1;
         if (state.settings.graphics === 'low') {
-            ctx.fillStyle = `rgba(0,0,0,${0.6 * depthRatio})`;
-            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = `rgba(0,0,0,${0.6 * depthRatio})`; ctx.fillRect(0, 0, width, height);
         } else {
             let screenPx = width/2, screenPy = height/2;
             let grad = ctx.createRadialGradient(screenPx, screenPy, 50, screenPx, screenPy, 400);
@@ -775,12 +788,50 @@ function buyPickaxe() {
         sounds.win(); updateHUD(); saveGame();
     }
 }
+
+// Покупка новой локации (теперь с мгновенным телепортом!)
 function buyLocation() {
-    let nextLoc = biomes[state.currentLocIndex + 1];
+    let nextLoc = biomes[state.maxLocIndex + 1];
     if (nextLoc && state.diamonds >= nextLoc.cost) {
-        state.diamonds -= nextLoc.cost; state.currentLocIndex++;
-        sounds.win(); updateHUD(); saveGame();
+        state.diamonds -= nextLoc.cost;
+        state.maxLocIndex++; // Открываем новую
+        teleportTo(state.maxLocIndex); // Сразу перемещаемся
     }
+}
+
+// Новая функция: Телепортация на любую открытую локацию
+function teleportTo(index) {
+    if(index > state.maxLocIndex) return;
+    state.currentLocIndex = index;
+
+    // Сброс мира и позиции игрока под новый биом
+    world = {}; particles = []; damageTexts = [];
+    player.x = 0; player.y = 120; player.vx = 0; player.vy = 0;
+    camera.x = 0; camera.y = 0;
+    state.combo = 0; comboTimer = 0;
+
+    saveGame(); updateHUD(); closeMenu('locations-menu');
+    sounds.win();
+}
+
+function updateLocationsUI() {
+    const grid = document.getElementById('locations-grid');
+    grid.innerHTML = '';
+    biomes.forEach((b, index) => {
+        if (index <= state.maxLocIndex) {
+            let locName = locales[state.lang].biomeNames[index] || b.name;
+            let isCurrent = index === state.currentLocIndex;
+            grid.innerHTML += `
+                <div class="shop-item" style="border-color: ${isCurrent ? 'var(--accent)' : '#444'};">
+                    <strong style="color: ${isCurrent ? 'var(--accent)' : 'white'};">${locName}</strong>
+                    <button class="btn ${isCurrent ? '' : 'btn-cyan'}" style="margin-top: 10px;"
+                        ${isCurrent ? 'disabled' : ''} onclick="teleportTo(${index})">
+                        ${isCurrent ? T('current') : T('teleportBtn')}
+                    </button>
+                </div>
+            `;
+        }
+    });
 }
 
 function updateHUD() {
@@ -797,12 +848,12 @@ function updateHUD() {
     else { btnP.innerText = `${T('buy')} (${state.pickaxeCost} 💎)`; btnP.disabled = state.diamonds < state.pickaxeCost; }
 
     const btnL = document.getElementById('btn-buy-loc');
-    let nextLoc = biomes[state.currentLocIndex + 1];
+    let nextLoc = biomes[state.maxLocIndex + 1];
     if (!nextLoc) { document.getElementById('text-loc-name-disp').innerText = T('max'); btnL.innerText = T('max'); btnL.disabled = true; }
     else {
-        let locName = locales[state.lang].biomeNames[state.currentLocIndex + 1] || nextLoc.name;
+        let locName = locales[state.lang].biomeNames[state.maxLocIndex + 1] || nextLoc.name;
         document.getElementById('text-loc-name-disp').innerText = `${locName} (${nextLoc.cost} 💎)`;
-        btnL.innerText = T('travel'); btnL.disabled = state.diamonds < nextLoc.cost;
+        btnL.innerText = T('buy'); btnL.disabled = state.diamonds < nextLoc.cost;
     }
 }
 
@@ -812,6 +863,7 @@ function openMenu(id) {
     updateHUD();
     if(id === 'upgrades-menu') updateUpgradesUI();
     if(id === 'rebirth-menu') updateRebirthUI();
+    if(id === 'locations-menu') updateLocationsUI();
 }
 function closeMenu(id) { isMenuOpen = false; document.getElementById(id).classList.remove('active'); }
 function toggleSound() { state.settings.sound = !state.settings.sound; updateHUD(); }
@@ -851,8 +903,11 @@ function doRebirth() {
     if (state.diamonds < rebirthsDB[rb].cost) return;
     if (!confirm(T('confirmRebirth'))) return;
 
-    state.diamonds = 0; state.pickaxeLevel = 1; state.pickaxePower = 1; state.pickaxeCost = 5; state.currentLocIndex = 0;
-    state.pets = []; state.equippedPetIds = []; state.unlockedPetSlots = 3; state.combo = 0;
+    state.diamonds = 0; state.pickaxeLevel = 1;
+    state.pickaxePower = 1; state.pickaxeCost = 5;
+    state.currentLocIndex = 0; state.maxLocIndex = 0;
+    state.pets = []; state.equippedPetIds = []; state.unlockedPetSlots = 3;
+    state.combo = 0;
     state.upgrades = { gemMult: 0, reach: 0, critChance: 0, critMult: 0 };
     state.rebirths++;
 
@@ -875,7 +930,7 @@ function updateUpgradesUI() {
 
         html += `
             <div class="upgrade-card ${isMax ? 'maxed' : ''}">
-                <div style="font-size: 24px; margin-bottom: 5px; font-family: 'Segoe UI Emoji', sans-serif;">${data.icon}</div>
+                <div style="font-size: 24px; margin-bottom: 5px; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">${data.icon}</div>
                 <h3 style="font-size: 16px; margin: 0;">${locData.name} (Lv.${lvl})</h3>
                 <p style="font-size: 11px; color: #aaa; margin: 5px 0; min-height: 15px;">${locData.desc}</p>
                 <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">${T('current')} <span style="color:#00e5ff">${currentText}</span></div>
@@ -905,7 +960,7 @@ function buildCasesUI() {
         const div = document.createElement('div'); div.className = 'case-item';
         div.innerHTML = `
             <strong style="color: var(--accent); font-size: 1.2em;">${c.name}</strong>
-            <span style="font-size: 2em;">🎁</span>
+            <span style="font-size: 2em; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">🎁</span>
             <div style="font-size: 0.75em; text-align: left; width: 100%; border-top: 1px solid #444; padding-top: 5px; min-height: 80px;">
                 ${c.drops.common ? `<span style="color:var(--rarity-common)">Common: ${c.drops.common}%</span><br>` : ''}
                 ${c.drops.rare ? `<span style="color:var(--rarity-rare)">Rare: ${c.drops.rare}%</span><br>` : ''}
@@ -946,22 +1001,38 @@ function executeCaseRoll(c, amount) {
         }
         pendingPetRewards.push(getRandomPetByRarity(wonRarity));
     }
-    if(amount <= 2) { showRoulette(pendingPetRewards[0]); } else { showFastRewards(pendingPetRewards); }
+    if(amount <= 2) { showRoulette(pendingPetRewards[0], c); } else { showFastRewards(pendingPetRewards); }
 }
 
-function showRoulette(wonPet) {
+function showRoulette(wonPet, caseObj) {
     document.getElementById('roulette-overlay').classList.add('active');
     const track = document.getElementById('roulette-track');
     track.style.transition = 'none'; track.style.transform = 'translateX(0)'; track.innerHTML = '';
-    const itemsCount = state.settings.graphics === 'low' ? 10 : 20; const winIndex = state.settings.graphics === 'low' ? 8 : 15;
+
+    const itemsCount = state.settings.graphics === 'low' ? 10 : 20;
+    const winIndex = state.settings.graphics === 'low' ? 8 : 15;
+
     for(let i=0; i<itemsCount; i++) {
-        let fakePet = i === winIndex ? wonPet : getRandomPetByRarity(Object.keys(rarities)[Math.floor(Math.random()*Object.keys(rarities).length)]);
+        let fakePet;
+        if (i === winIndex) {
+            fakePet = wonPet;
+        } else {
+            let rFake = Math.random() * 100;
+            let sumFake = 0; let fakeRarity = 'common';
+            for(let [rName, rChance] of Object.entries(caseObj.drops)) {
+                if(rChance <= 0) continue;
+                sumFake += rChance; if(rFake <= sumFake) { fakeRarity = rName; break; }
+            }
+            fakePet = getRandomPetByRarity(fakeRarity);
+        }
+
         let rInfo = rarities[fakePet.rarity];
         let el = document.createElement('div'); el.className = 'roulette-item'; el.style.borderColor = rInfo.color;
-        el.innerHTML = `<div style="font-family: 'Segoe UI Emoji', sans-serif;">${getPetIcon(fakePet)}</div><span style="color:${rInfo.color}">${getPetName(fakePet)}</span>`;
+        el.innerHTML = `<div style="font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">${getPetIcon(fakePet)}</div><span style="color:${rInfo.color}">${getPetName(fakePet)}</span>`;
         track.appendChild(el);
     }
     document.getElementById('btn-claim-pet').style.display = 'none'; document.getElementById('roulette-result').innerHTML = '';
+
     setTimeout(() => {
         track.style.transition = `transform ${state.settings.graphics === 'low' ? 1.5 : 3}s cubic-bezier(0.15, 0.85, 0.15, 1)`;
         let offset = (winIndex * 110) - (document.querySelector('.roulette-container').clientWidth / 2) + 55;
@@ -984,7 +1055,7 @@ function showFastRewards(pets) {
         setTimeout(() => {
             let rInfo = rarities[pet.rarity];
             let div = document.createElement('div'); div.className = 'fast-reward-item'; div.style.borderColor = rInfo.color; div.style.boxShadow = `0 0 10px ${rInfo.color}`;
-            div.innerHTML = `<div style="font-size:40px; font-family: 'Segoe UI Emoji', sans-serif;">${getPetIcon(pet)}</div><strong style="color:${rInfo.color}">${getPetName(pet)}</strong>`;
+            div.innerHTML = `<div style="font-size:40px; font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">${getPetIcon(pet)}</div><strong style="color:${rInfo.color}">${getPetName(pet)}</strong>`;
             grid.appendChild(div); sounds.win();
         }, i * (state.settings.graphics === 'low' ? 50 : 200));
     });
@@ -1025,7 +1096,7 @@ function updateInventoryUI() {
         let rInfo = rarities[pet.rarity]; const div = document.createElement('div'); const isEq = state.equippedPetIds.includes(pet.instanceId);
         div.className = `pet-card ${isEq ? 'equipped' : ''}`; div.style.borderColor = rInfo.color;
         div.innerHTML = `
-            <div class="pet-img" style="font-family: 'Segoe UI Emoji', sans-serif;">${getPetIcon(pet)}</div>
+            <div class="pet-img" style="font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;">${getPetIcon(pet)}</div>
             <strong style="color: ${rInfo.color}">${getPetName(pet)}</strong>
             <div class="pet-stats">Gems: +${(rInfo.mult - 1).toFixed(1)}x | DMG: +${rInfo.dmg}</div>
             <button class="btn ${isEq ? 'btn-orange' : 'btn-green'}" style="width:100%; margin-top:10px; padding: 5px;" onclick="equipPet('${pet.instanceId}')">${isEq ? T('unequip') : T('equip')}</button>
@@ -1047,9 +1118,8 @@ function equipPet(instanceId) {
 /** GAME LOOP */
 function loop() { updatePhysics(); draw(); requestAnimationFrame(loop); }
 
-// Init run
 loadGame();
-loop(); // Обязательно вызываем луп
+loop();
 </script>
 </body>
 </html>
