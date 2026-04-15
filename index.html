@@ -1,821 +1,1469 @@
 <!DOCTYPE html>
-<html lang="uk" data-theme="standard">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Головоломка | Block Puzzle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --board-size: 80vw;
-            --max-board-size: 400px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BLOCKFIT</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS ЗМІННІ ТА ТЕМИ (Оновлений дизайн)
+============================================================ */
+:root {
+  --bg: #0B0C10;
+  --bg2: #15161E;
+  --surface: rgba(25, 26, 36, 0.7);
+  --surface-solid: #191A24;
+  --surface2: rgba(40, 42, 54, 0.8);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-solid: #2A2C3A;
+  --text: #F8F8FF;
+  --text2: #9BA0B5;
+  --accent: #F5C842;
+  --accent-rgb: 245,200,66;
+  --accent2: #FF6B8A;
+  --grid-bg: rgba(15, 16, 22, 0.6);
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --grid-hover-ok: rgba(80,255,160,0.2);
+  --grid-hover-no: rgba(255,80,80,0.2);
+  --shadow: 0 16px 40px rgba(0,0,0,0.4);
+  --radius: 20px;
+  --piece-shine: rgba(255,255,255,0.25);
+  --piece-shadow: rgba(0,0,0,0.3);
+  --glass-blur: blur(12px);
+}
+body.theme-white {
+  --bg: #F4F4F0;
+  --bg2: #EAEAE4;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-solid: #FFFFFF;
+  --surface2: rgba(240, 240, 235, 0.9);
+  --border: rgba(0, 0, 0, 0.06);
+  --border-solid: #DDDDDD;
+  --text: #111118;
+  --text2: #6A6D7E;
+  --accent: #5A67D8;
+  --accent-rgb: 90,103,216;
+  --accent2: #ED64A6;
+  --grid-bg: rgba(250, 250, 250, 0.6);
+  --grid-line: rgba(0, 0, 0, 0.04);
+  --grid-hover-ok: rgba(72,187,120,0.2);
+  --grid-hover-no: rgba(245,101,101,0.2);
+  --shadow: 0 12px 30px rgba(0,0,0,0.08);
+  --piece-shine: rgba(255,255,255,0.6);
+  --piece-shadow: rgba(0,0,0,0.15);
+}
+body.theme-black {
+  --bg: #000000;
+  --bg2: #050505;
+  --surface: rgba(15, 15, 15, 0.8);
+  --surface-solid: #0F0F0F;
+  --surface2: rgba(30, 30, 30, 0.9);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-solid: #222222;
+  --text: #FFFFFF;
+  --text2: #888888;
+  --accent: #FFFFFF;
+  --accent-rgb: 255,255,255;
+  --accent2: #AAAAAA;
+  --grid-bg: rgba(5, 5, 5, 0.6);
+  --grid-line: rgba(255, 255, 255, 0.05);
+  --grid-hover-ok: rgba(255,255,255,0.15);
+  --grid-hover-no: rgba(255,60,60,0.2);
+  --shadow: 0 20px 50px rgba(0,0,0,0.8);
+  --piece-shine: rgba(255,255,255,0.15);
+  --piece-shadow: rgba(0,0,0,0.5);
+}
 
-        /* --- ТЕМИ ОФОРМЛЕННЯ --- */
-        /* 1. Стандартна (Glassmorphism) */
-        [data-theme="standard"] {
-            --bg-body: linear-gradient(135deg, #0f172a, #1e1b4b);
-            --text-main: #f8fafc;
-            --text-muted: #cbd5e1;
-            --header-bg: transparent;
-            --board-bg: rgba(255, 255, 255, 0.05);
-            --board-border: rgba(255, 255, 255, 0.1);
-            --cell-bg: rgba(255, 255, 255, 0.03);
-            --cell-border: rgba(255, 255, 255, 0.05);
-            --dock-bg: rgba(15, 23, 42, 0.6);
-            --btn-bg: rgba(30, 41, 59, 0.5);
-            --btn-hover: rgba(51, 65, 85, 0.5);
-            --modal-bg: rgba(30, 41, 59, 0.95);
-            --modal-overlay: rgba(15, 23, 42, 0.8);
-            
-            --color-0: linear-gradient(135deg, #f43f5e, #e11d48);
-            --color-1: linear-gradient(135deg, #3b82f6, #2563eb);
-            --color-2: linear-gradient(135deg, #10b981, #059669);
-            --color-3: linear-gradient(135deg, #f59e0b, #d97706);
-            --color-4: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            --color-5: linear-gradient(135deg, #06b6d4, #0891b2);
-            --color-6: linear-gradient(135deg, #ec4899, #db2777);
-            
-            --piece-shadow: inset 0 0 10px rgba(255,255,255,0.2);
-            --piece-border: 1px solid rgba(255,255,255,0.3);
-            --title-color: transparent;
-            --title-bg: linear-gradient(to right, #22d3ee, #c084fc);
-        }
+/* ============================================================
+   БАЗОВІ НАЛАШТУВАННЯ
+============================================================ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100dvh;
+  transition:background .4s ease,color .4s ease;
+}
+button { outline: none; border: none; background: none; font-family: inherit; }
 
-        /* 2. Світла мінімалістична */
-        [data-theme="light"] {
-            --bg-body: #f3f4f6;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --header-bg: #ffffff;
-            --board-bg: #ffffff;
-            --board-border: #e5e7eb;
-            --cell-bg: #f9fafb;
-            --cell-border: #e5e7eb;
-            --dock-bg: #ffffff;
-            --btn-bg: #f3f4f6;
-            --btn-hover: #e5e7eb;
-            --modal-bg: #ffffff;
-            --modal-overlay: rgba(0, 0, 0, 0.5);
+/* ============================================================
+   ЕКРАНИ
+============================================================ */
+.screen{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  transition:opacity .3s, transform .3s;
+}
+.hidden{display:none!important; opacity:0; pointer-events: none;}
 
-            --color-0: #ef4444;
-            --color-1: #3b82f6;
-            --color-2: #10b981;
-            --color-3: #f59e0b;
-            --color-4: #8b5cf6;
-            --color-5: #06b6d4;
-            --color-6: #ec4899;
+/* ============================================================
+   ВІТАЛЬНИЙ ЕКРАН
+============================================================ */
+#screen-welcome{
+  background:var(--bg);
+  padding:24px;
+  gap:0;
+  overflow-y:auto;
+}
+.welcome-blob{
+  position:absolute;pointer-events:none;
+  border-radius:50%;filter:blur(80px);opacity:.4;
+  z-index: 0;
+}
+.welcome-blob1{
+  width:400px;height:400px;
+  background:radial-gradient(circle,var(--accent2) 0%,transparent 70%);
+  top:-100px;right:-100px;
+}
+.welcome-blob2{
+  width:350px;height:350px;
+  background:radial-gradient(circle,var(--accent) 0%,transparent 70%);
+  bottom:-100px;left:-100px;
+}
+.welcome-content{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;
+  align-items:center;gap:32px;
+  width:100%;max-width:400px;
+  padding:12px 0 24px;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: 40px 30px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.logo-area{text-align:center;}
+.logo-blocks{
+  display:flex;gap:6px;justify-content:center;margin-bottom:12px;
+}
+.logo-block{
+  width:22px;height:22px;border-radius:6px;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+  animation:logoJump 1.6s ease-in-out infinite;
+}
+.logo-block:nth-child(1){background:#FF6B8A;animation-delay:0s;}
+.logo-block:nth-child(2){background:#F5C842;animation-delay:.12s;}
+.logo-block:nth-child(3){background:#4ECDC4;animation-delay:.24s;}
+.logo-block:nth-child(4){background:#A78BFA;animation-delay:.36s;}
+.logo-block:nth-child(5){background:#06D6A0;animation-delay:.48s;}
+@keyframes logoJump{
+  0%,100%{transform:translateY(0) scale(1);}
+  50%{transform:translateY(-10px) scale(1.08);}
+}
+.logo-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(40px,10vw,56px);
+  font-weight:800;
+  letter-spacing:-2px;line-height:1;
+  background:linear-gradient(135deg,var(--text) 0%,var(--text2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.logo-sub{
+  font-size:13px;color:var(--text2);
+  letter-spacing:3px;text-transform:uppercase;font-weight: 500;
+  margin-top:10px;
+}
+.lang-row{display:flex;gap:10px; background: var(--bg2); padding: 5px; border-radius: 100px; border: 1px solid var(--border);}
+.lang-btn{
+  padding:8px 20px;
+  background:transparent; border-radius:100px;
+  color:var(--text2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;transition:all .3s ease;
+}
+.lang-btn.active{color:var(--bg);background:var(--text); box-shadow: 0 4px 10px rgba(0,0,0,0.1);}
+.input-group{width:100%;display:flex;flex-direction:column;gap:8px;}
+.input-label{font-size:12px;color:var(--text2);letter-spacing:1px;text-transform:uppercase; font-weight: 600; padding-left: 5px;}
+.nick-input{
+  width:100%;padding:16px 20px;
+  background:var(--bg2);border:2px solid var(--border);border-radius:16px;
+  color:var(--text);font-family:'Syne',sans-serif;font-size:18px;font-weight:600;
+  outline:none;transition:all .3s ease;
+}
+.nick-input:focus{
+  border-color:var(--accent);
+  background:var(--surface-solid);
+  box-shadow:0 0 0 4px rgba(var(--accent-rgb),.15);
+}
+.nick-input.error{border-color:#FF6B6B;}
+.nick-input.warn{border-color:#F5C842;}
+.msg-box{
+  font-size:13px;min-height:20px;padding-left:10px;line-height:1.4; font-weight: 500;
+  transition:all .2s;
+}
+.msg-box.red{color:#FF6B6B;}
+.msg-box.yellow{color:#F5C842;}
+.msg-box.green{color:#06D6A0;}
+.btn-primary{
+  width:100%;padding:18px;
+  background:var(--text);color:var(--bg);border:none;border-radius:16px;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;
+  transition:all .2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 25px rgba(255,255,255,0.2);}
+.btn-primary:active{transform:translateY(1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15);}
 
-            --piece-shadow: none;
-            --piece-border: 2px solid rgba(0,0,0,0.1);
-            --title-color: #111827;
-            --title-bg: none;
-        }
+.btn-secondary{
+  width:100%;padding:16px;
+  background:transparent;color:var(--text);border:2px solid var(--border);border-radius:16px;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .2s;
+}
+.btn-secondary:hover{border-color:var(--text); background: rgba(255,255,255,0.05);}
 
-        /* 3. Темна мінімалістична */
-        [data-theme="dark"] {
-            --bg-body: #111827;
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --header-bg: #1f2937;
-            --board-bg: #1f2937;
-            --board-border: #374151;
-            --cell-bg: #111827;
-            --cell-border: #374151;
-            --dock-bg: #1f2937;
-            --btn-bg: #374151;
-            --btn-hover: #4b5563;
-            --modal-bg: #1f2937;
-            --modal-overlay: rgba(0, 0, 0, 0.8);
+/* ============================================================
+   ІГРОВИЙ ЕКРАН
+============================================================ */
+#screen-game{
+  flex-direction:column;padding:0;
+  background:var(--bg);overflow:hidden;
+  justify-content:flex-start;
+}
+.game-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 18px; width: 100%;
+  background:var(--surface); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;gap:8px;min-height:64px; z-index: 10;
+}
+.header-logo{
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:-0.5px;flex-shrink:0;
+}
+.header-mid{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;}
+.level-pill{
+  background:var(--text);color:var(--bg);
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:800;
+  padding:4px 16px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;
+  white-space:nowrap; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.score-txt{
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text2);
+}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.player-chip{
+  font-size:12px;font-weight:600; color:var(--text);background:var(--bg2);
+  border:1px solid var(--border);padding:6px 14px;border-radius:100px;
+  max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.icon-btn{
+  width:40px;height:40px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;transition:all .2s;flex-shrink:0;
+}
+.icon-btn:hover{background:var(--surface2); border-color:var(--text2); transform: scale(1.05);}
 
-            --color-0: #f87171;
-            --color-1: #60a5fa;
-            --color-2: #34d399;
-            --color-3: #fbbf24;
-            --color-4: #a78bfa;
-            --color-5: #22d3ee;
-            --color-6: #f472b6;
+.game-body{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:20px 16px 10px;gap:16px;overflow:hidden;position:relative; width: 100%;
+  min-height:0;
+}
+.info-bar{
+  display:flex;align-items:center;gap:12px;font-size:14px;color:var(--text2); font-weight: 500;
+  flex-shrink:0; background: var(--surface); padding: 8px 16px; border-radius: 100px; border: 1px solid var(--border);
+}
+.pieces-left-pill{
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);
+}
 
-            --piece-shadow: none;
-            --piece-border: 2px solid rgba(255,255,255,0.1);
-            --title-color: #f9fafb;
-            --title-bg: none;
-        }
+/* ============================================================
+   СІТКА (GRID)
+============================================================ */
+.grid-wrap{position:relative;flex-shrink:0;}
+.puzzle-grid{
+  display:grid;
+  background:var(--grid-bg);
+  border:2px solid var(--border-solid);
+  border-radius:var(--radius);
+  padding: 6px; /* Відступ від краю */
+  backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow:var(--shadow), inset 0 0 20px rgba(0,0,0,0.2);
+  touch-action: none; /* Заборона скролу по сітці */
+}
+.gc{
+  border:1px solid var(--grid-line);
+  border-radius: 6px; /* Скруглені клітинки сітки */
+  transition:background .15s ease, transform .1s;
+  position:relative;
+}
+.gc.filled{
+  border-color:rgba(0,0,0,.15);
+  cursor: grab;
+}
+.gc.filled:active{ cursor: grabbing; }
+.gc.hv-ok{background:var(--grid-hover-ok)!important;}
+.gc.hv-no{background:var(--grid-hover-no)!important;}
+.gc.pa{animation:placeAnim .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes placeAnim{
+  0%{transform:scale(.7);opacity:.5;}
+  100%{transform:scale(1);opacity:1;}
+}
+.grid-flash{
+  position:absolute;inset:0;pointer-events:none;border-radius:var(--radius);
+  background:radial-gradient(circle,rgba(var(--accent-rgb),.4) 0%,transparent 80%);
+  opacity:0;transition:opacity .4s ease-out;
+}
+.grid-flash.show{opacity:1;}
 
-        body {
-            font-family: 'Nunito', sans-serif;
-            background: var(--bg-body);
-            color: var(--text-main);
-            overflow: hidden;
-            touch-action: none;
-            transition: background 0.3s, color 0.3s;
-        }
+/* ============================================================
+   ПІДКАЗКА
+============================================================ */
+.hint-txt{
+  font-size:13px;color:var(--text2);text-align:center;flex-shrink:0; font-weight: 500;
+  animation:hintPulse 3s ease-in-out infinite;
+}
+@keyframes hintPulse{0%,100%{opacity:.3;}50%{opacity:.8;}}
 
-        /* Базові UI компоненти */
-        .btn-ui {
-            background: var(--btn-bg);
-            color: var(--text-main);
-            transition: background 0.2s;
-        }
-        .btn-ui:hover { background: var(--btn-hover); }
-        .text-muted { color: var(--text-muted); }
+/* ============================================================
+   ПАНЕЛЬ ФІГУР
+============================================================ */
+.pieces-panel{
+  width:100%;max-width:600px;
+  background:var(--surface); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;
+  display:flex;flex-wrap:wrap;gap:14px;
+  align-items:center;justify-content:center;
+  flex-shrink:0;box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+  min-height:100px;
+  overflow-y:auto;max-height:30vh;
+  touch-action:none;
+}
+.piece-wrap{
+  cursor:grab;position:relative;display:grid;
+  user-select:none;touch-action:none;
+  transition:transform .2s cubic-bezier(0.34, 1.56, 0.64, 1),opacity .2s;
+}
+.piece-wrap:hover{transform:scale(1.05);}
+.piece-wrap:active{cursor:grabbing;}
+.pc{border-radius:5px;}
+.pc.on{
+  box-shadow:inset 0 3px 0 var(--piece-shine),inset 0 -3px 0 var(--piece-shadow), 0 2px 4px rgba(0,0,0,0.2);
+}
+.pc.off{background:transparent!important;}
 
-        /* Стилі ігрового поля */
-        #board-container {
-            width: min(var(--board-size), var(--max-board-size));
-            height: min(var(--board-size), var(--max-board-size));
-            position: relative;
-            background: var(--board-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 1rem;
-            border: 1px solid var(--board-border);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-            margin: 0 auto;
-            transition: all 0.3s;
-        }
+/* ============================================================
+   ПЛАВАЮЧА ФІГУРА ПРИ ПЕРЕТЯГУВАННІ
+============================================================ */
+.float-piece{
+  position:fixed;pointer-events:none;z-index:9999;display:grid;
+  opacity:0.95; 
+  /* Масштаб прибираємо, бо ми будемо рендерити її в точному розмірі клітинок */
+  filter:drop-shadow(0 15px 25px rgba(0,0,0,.5));
+  transition:none;
+}
+.float-piece .pc.on {
+  box-shadow:inset 0 4px 0 var(--piece-shine),inset 0 -4px 0 var(--piece-shadow);
+}
 
-        .board-grid {
-            display: grid;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            gap: 2px;
-            padding: 4px;
-            box-sizing: border-box;
-        }
+/* ============================================================
+   МОДАЛЬНІ ВІКНА
+============================================================ */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  padding:20px;animation:ovFade .3s ease;
+}
+@keyframes ovFade{from{opacity:0;}to{opacity:1;}}
+.modal{
+  background:var(--surface-solid);border:1px solid var(--border);border-radius:24px;
+  padding:32px 28px;width:100%;max-width:420px;
+  max-height:85dvh;overflow-y:auto;
+  box-shadow:var(--shadow);animation:modalUp .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalUp{from{transform:translateY(40px) scale(0.95);opacity:0;}to{transform:translateY(0) scale(1);opacity:1;}}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;}
+.modal-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800; letter-spacing: -0.5px;}
+.x-btn{
+  width:36px;height:36px;background:var(--bg2);border:none;
+  border-radius:10px;color:var(--text2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  transition:all .2s; border: 1px solid var(--border);
+}
+.x-btn:hover{background:var(--border-solid);color:var(--text); transform: rotate(90deg);}
 
-        .board-cell {
-            background: var(--cell-bg);
-            border-radius: 4px;
-            border: 1px solid var(--cell-border);
-            transition: background 0.2s;
-        }
+/* Налаштування */
+.srow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 0;border-bottom:1px solid var(--border);
+}
+.srow:last-child{border-bottom:none; padding-bottom: 0;}
+.srow:first-child{padding-top: 0;}
+.slabel{font-size:16px;font-weight:600;}
+.toggle{
+  width:52px;height:30px;background:var(--bg2);border-radius:100px; border: 1px solid var(--border);
+  position:relative;cursor:pointer;transition:background .3s, border-color .3s;flex-shrink:0;
+}
+.toggle.on{background:var(--accent); border-color: var(--accent);}
+.toggle::after{
+  content:'';position:absolute;
+  width:22px;height:22px;background:#fff;border-radius:50%;
+  top:3px;left:3px;transition:transform .3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.toggle.on::after{transform:translateX(22px);}
+.opt-row{display:flex;gap:8px;flex-wrap:wrap;}
+.opt-btn{
+  padding:8px 16px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;
+  font-weight:600;cursor:pointer;transition:all .2s;
+}
+.opt-btn.active{border-color:var(--accent);color:var(--text); background: rgba(var(--accent-rgb), 0.15);}
 
-        /* Стилі фігур */
-        .piece {
-            display: grid;
-            gap: 2px;
-            cursor: grab;
-            touch-action: none;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-        }
-        
-        .piece:active { cursor: grabbing; }
-        .piece.dragging {
-            transition: none;
-            z-index: 1000;
-            opacity: 0.9;
-            transform: scale(1.05);
-            filter: drop-shadow(0 20px 13px rgba(0,0,0,0.3));
-        }
+/* Таблиця лідерів */
+.lb-tbl{width:100%;border-collapse:separate; border-spacing: 0 4px;}
+.lb-tbl th{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;color:var(--text2);
+  padding:10px;text-align:left; border-bottom: 2px solid var(--bg2);
+}
+.lb-tbl td{padding:14px 10px;font-size:15px; font-weight: 500; background: var(--bg2);}
+.lb-tbl tr td:first-child{ border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+.lb-tbl tr td:last-child{ border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+.lb-rnk{font-family:'Syne',sans-serif;font-weight:800;width:40px; font-size: 16px;}
+.lb-rnk.gold{color:#FFD700;}
+.lb-rnk.silver{color:#C0C0C0;}
+.lb-rnk.bronze{color:#CD7F32;}
+.lb-me td{background:rgba(var(--accent-rgb),.15); color: var(--accent);}
+.lb-empty{text-align:center;color:var(--text2);padding:40px 0; font-weight: 500;}
 
-        .piece-block {
-            border-radius: 4px;
-            box-shadow: var(--piece-shadow);
-            border: var(--piece-border);
-        }
-        .empty-block { background: transparent; border: none; box-shadow: none; }
+/* Завершення рівня */
+.lc-wrap{text-align:center;}
+.lc-emoji{font-size:70px;display:block;margin-bottom:12px;animation:lcPop .6s cubic-bezier(.34,2,.64,1);}
+@keyframes lcPop{from{transform:scale(0) rotate(-20deg);}to{transform:scale(1) rotate(0);}}
+.lc-title{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;margin-bottom:8px;}
+.lc-sub{color:var(--text2);font-size:16px;margin-bottom:26px; font-weight: 500;}
+.lc-stats{display:flex;gap:12px;justify-content:center;margin-bottom:28px;}
+.lc-stat{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:16px 24px;text-align:center; flex: 1;
+}
+.lc-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--accent);display:block; margin-bottom: 4px;}
+.lc-lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1.5px; font-weight: 700;}
 
-        /* Кольори фігур (через змінні) */
-        .color-0 { background: var(--color-0); }
-        .color-1 { background: var(--color-1); }
-        .color-2 { background: var(--color-2); }
-        .color-3 { background: var(--color-3); }
-        .color-4 { background: var(--color-4); }
-        .color-5 { background: var(--color-5); }
-        .color-6 { background: var(--color-6); }
+/* ============================================================
+   КОНФЕТІ
+============================================================ */
+#confetti-box{position:fixed;inset:0;pointer-events:none;z-index:998;overflow:hidden;}
+.cf{
+  position:absolute;top:-20px;border-radius:4px;
+  animation:cfFall linear forwards;
+}
+@keyframes cfFall{
+  0%{transform:translateY(0) rotate(0);opacity:1;}
+  100%{transform:translateY(105vh) rotate(720deg);opacity:0;}
+}
 
-        /* Контейнер док-станції */
-        #dock-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1rem;
-            height: 30vh;
-            overflow-y: auto;
-        }
-        .dock-slot { display: flex; justify-content: center; items-center; min-width: 80px; min-height: 80px; }
-        footer { background: var(--dock-bg); backdrop-filter: blur(10px); border-top: 1px solid var(--board-border); }
-        header { background: var(--header-bg); }
+/* ============================================================
+   СКРОЛБАР
+============================================================ */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-solid);border-radius:10px;}
 
-        /* Анімації */
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        @keyframes winPulse {
-            0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
-            70% { box-shadow: 0 0 0 30px rgba(74, 222, 128, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
-        }
-        .win-anim { animation: winPulse 1.5s infinite; border-color: #4ade80 !important; }
-
-        /* Модальні вікна */
-        .modal {
-            display: none;
-            background: var(--modal-overlay);
-            backdrop-filter: blur(5px);
-        }
-        .modal.active { display: flex; animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .modal-content {
-            background: var(--modal-bg);
-            border: 1px solid var(--board-border);
-            color: var(--text-main);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            transform: translateY(20px);
-            animation: slideUp 0.3s ease-out forwards;
-        }
-        @keyframes slideUp { to { transform: translateY(0); } }
-
-        /* Заголовок */
-        .level-title {
-            color: var(--title-color);
-            background-image: var(--title-bg);
-            -webkit-background-clip: var(--title-bg) != none ? text : unset;
-        }
-
-        /* Стилі інпуту */
-        .custom-input {
-            background: var(--cell-bg);
-            border: 2px solid var(--board-border);
-            color: var(--text-main);
-            outline: none;
-        }
-        .custom-input:focus { border-color: #3b82f6; }
-    </style>
+/* ============================================================
+   АДАПТИВНІСТЬ
+============================================================ */
+@media(max-width:400px){
+  .game-header{padding:10px 14px;min-height:56px;}
+  .header-logo{font-size:16px;}
+  .player-chip{display:none;}
+  .lc-title{font-size:24px;}
+  .modal{padding:24px 20px;}
+  .pieces-panel { padding: 12px; gap: 10px; }
+}
+@media(min-height:800px){
+  .game-body{gap:24px;padding:30px 20px 20px;}
+  .pieces-panel { padding: 20px; }
+}
+</style>
 </head>
-<body class="h-screen w-screen flex flex-col relative select-none">
+<body class="theme-default">
 
-    <!-- Хедер -->
-    <header class="w-full p-3 flex justify-between items-center z-10 shadow-sm transition-colors duration-300">
-        <!-- Нікнейм та мова -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <button id="btn-lang" class="btn-ui font-bold px-3 py-1.5 rounded-lg text-sm">EN/UK</button>
-            <div id="player-badge" class="hidden items-center gap-2 px-3 py-1.5 rounded-lg border" style="border-color: var(--board-border); background: var(--cell-bg);">
-                <span class="text-sm">👤</span>
-                <span id="display-nickname" class="font-bold text-sm truncate max-w-[100px]">Player</span>
-            </div>
-        </div>
-        
-        <div class="text-center absolute left-1/2 transform -translate-x-1/2">
-            <h1 class="text-xl sm:text-2xl font-extrabold tracking-wider level-title bg-clip-text" data-i18n="level_title">
-                Рівень <span id="level-display">1</span>
-            </h1>
-        </div>
+<!-- ==================== ВІТАЛЬНИЙ ЕКРАН ==================== -->
+<div id="screen-welcome" class="screen">
+  <div class="welcome-blob welcome-blob1"></div>
+  <div class="welcome-blob welcome-blob2"></div>
+  <div class="welcome-content">
 
-        <div class="flex gap-2">
-            <button onclick="openModal('leaderboard-modal')" class="btn-ui p-2 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-            </button>
-            <button onclick="openModal('settings-modal')" class="btn-ui p-2 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-        </div>
-    </header>
-
-    <!-- Ігрове поле -->
-    <main class="flex-1 flex flex-col justify-center items-center w-full z-0 px-4 py-2">
-        <div id="board-container">
-            <div id="board-grid" class="board-grid"></div>
-        </div>
-    </main>
-
-    <!-- Док-станція -->
-    <footer class="w-full z-10 transition-colors duration-300">
-        <div id="dock-container"></div>
-    </footer>
-
-    <!-- Модальне вікно: Реєстрація (Введення ніка) -->
-    <div id="login-modal" class="modal fixed inset-0 z-[100] justify-center items-center">
-        <div class="modal-content rounded-2xl p-6 w-80 text-center">
-            <h2 class="text-2xl font-bold mb-2" data-i18n="welcome">Вітаємо!</h2>
-            <p class="text-muted mb-4 text-sm" data-i18n="enter_name">Придумайте ім'я гравця для збереження прогресу та участі в рейтингу.</p>
-            
-            <input type="text" id="nickname-input" class="custom-input w-full p-3 rounded-xl mb-2 font-bold text-center" placeholder="Player123" maxlength="15">
-            <p id="login-error" class="text-red-500 text-sm h-5 mb-4"></p>
-
-            <button onclick="saveNickname()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition" data-i18n="ready">Готово</button>
-        </div>
+    <div class="logo-area">
+      <div class="logo-blocks">
+        <div class="logo-block"></div>
+        <div class="logo-block"></div>
+        <div class="logo-block"></div>
+        <div class="logo-block"></div>
+        <div class="logo-block"></div>
+      </div>
+      <div class="logo-title">BLOCKFIT</div>
+      <div class="logo-sub" data-i18n="tagline">Заповни сітку. Пройди рівень.</div>
     </div>
 
-    <!-- Модальне вікно: Налаштування -->
-    <div id="settings-modal" class="modal fixed inset-0 z-50 justify-center items-center">
-        <div class="modal-content rounded-2xl p-6 w-80">
-            <h2 class="text-2xl font-bold mb-6 text-center" data-i18n="settings">Налаштування</h2>
-            
-            <div class="space-y-4">
-                <!-- Звук -->
-                <div class="flex justify-between items-center p-3 rounded-lg border" style="border-color: var(--board-border);">
-                    <span class="font-semibold" data-i18n="sound">Звук</span>
-                    <button id="toggle-sound" class="w-12 h-6 bg-blue-500 rounded-full relative transition-colors">
-                        <div id="sound-indicator" class="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-transform"></div>
-                    </button>
-                </div>
-
-                <!-- Тема -->
-                <div class="p-3 rounded-lg border" style="border-color: var(--board-border);">
-                    <span class="font-semibold block mb-2" data-i18n="theme">Дизайн</span>
-                    <div class="grid grid-cols-1 gap-2">
-                        <button onclick="setTheme('standard')" class="theme-btn btn-ui py-2 px-4 rounded border data-[active=true]:border-blue-500 data-[active=true]:text-blue-500 transition" data-theme-id="standard" data-i18n="theme_std">Стандарт</button>
-                        <button onclick="setTheme('light')" class="theme-btn btn-ui py-2 px-4 rounded border data-[active=true]:border-blue-500 data-[active=true]:text-blue-500 transition" data-theme-id="light" data-i18n="theme_light">Світлий мін.</button>
-                        <button onclick="setTheme('dark')" class="theme-btn btn-ui py-2 px-4 rounded border data-[active=true]:border-blue-500 data-[active=true]:text-blue-500 transition" data-theme-id="dark" data-i18n="theme_dark">Темний мін.</button>
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="closeModal('settings-modal')" class="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition" data-i18n="close">Закрити</button>
-        </div>
+    <div class="lang-row">
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn active" onclick="setLang('uk')">UA</button>
+      <button class="lang-btn" onclick="setLang('ru')">RU</button>
     </div>
 
-    <!-- Модальне вікно: Таблиця лідерів -->
-    <div id="leaderboard-modal" class="modal fixed inset-0 z-50 justify-center items-center">
-        <div class="modal-content rounded-2xl p-6 w-[90%] max-w-md">
-            <h2 class="text-2xl font-bold mb-4 text-center" data-i18n="leaderboard">Топ Гравців</h2>
-            
-            <div class="space-y-2 mb-6 max-h-[50vh] overflow-y-auto pr-2" id="leaderboard-list">
-                <!-- Дані генеруються через JS -->
-            </div>
-
-            <button onclick="closeModal('leaderboard-modal')" class="w-full py-3 btn-ui border border-[var(--board-border)] rounded-xl font-bold transition" data-i18n="close">Закрити</button>
-        </div>
+    <div class="input-group">
+      <div class="input-label" data-i18n="enterName">Твій нікнейм</div>
+      <input id="nick-input" class="nick-input" type="text" maxlength="15"
+             placeholder="Введи нікнейм..." data-i18n-ph="nickPh"
+             autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="msg-box" id="nick-msg"></div>
     </div>
 
-    <!-- Модальне вікно: Перемога -->
-    <div id="win-modal" class="modal fixed inset-0 z-50 justify-center items-center">
-        <div class="modal-content rounded-2xl p-8 w-80 text-center">
-            <div class="text-6xl mb-4">🏆</div>
-            <h2 class="text-3xl font-extrabold mb-2 text-green-500" data-i18n="win">Рівень Пройдено!</h2>
-            <p class="text-muted mb-6" data-i18n="ready_next">Готові до наступного?</p>
-            <button onclick="nextLevel()" class="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-green-500/30 hover:scale-105 transition transform" data-i18n="next_level">Наступний Рівень</button>
-        </div>
+    <button class="btn-primary" id="play-btn" onclick="handlePlay()" data-i18n="playBtn">ГРАТИ</button>
+    <button class="btn-secondary hidden" id="continue-btn" onclick="handleContinue()" data-i18n="continueBtn">ПРОДОВЖИТИ ГРУ</button>
+
+  </div>
+</div>
+
+<!-- ==================== ІГРОВИЙ ЕКРАН ==================== -->
+<div id="screen-game" class="screen hidden">
+  <div class="game-header">
+    <div class="header-logo">BF</div>
+    <div class="header-mid">
+      <div class="level-pill" id="level-pill">РІВЕНЬ 1</div>
+      <div class="score-txt" id="score-txt">0 очок</div>
     </div>
+    <div class="header-right">
+      <div class="player-chip" id="player-chip">—</div>
+      <button class="icon-btn" onclick="showLeaderboard()" title="Leaderboard">🏆</button>
+      <button class="icon-btn" onclick="showSettings()" title="Settings">⚙️</button>
+    </div>
+  </div>
+
+  <div class="game-body" id="game-body">
+    <div class="info-bar">
+      <span data-i18n="piecesLeft">Фігур залишилось:</span>
+      <span class="pieces-left-pill" id="pcs-left">0</span>
+    </div>
+
+    <div class="grid-wrap">
+      <div class="puzzle-grid" id="puzzle-grid"></div>
+      <div class="grid-flash" id="grid-flash"></div>
+    </div>
+
+    <div class="hint-txt" id="hint-txt" data-i18n="dragHint">Перетягуй фігури в сітку ✦</div>
+
+    <div class="pieces-panel" id="pieces-panel"></div>
+  </div>
+</div>
+
+<!-- ==================== МОДАЛКА: НАЛАШТУВАННЯ ==================== -->
+<div id="modal-settings" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" data-i18n="settings">Налаштування</div>
+      <button class="x-btn" onclick="closeModal('modal-settings')">✕</button>
+    </div>
+    <div class="srow">
+      <div class="slabel" data-i18n="sound">Звук</div>
+      <div class="toggle" id="snd-toggle" onclick="toggleSound()"></div>
+    </div>
+    <div class="srow">
+      <div class="slabel" data-i18n="language">Мова</div>
+      <div class="opt-row">
+        <button class="opt-btn" id="ol-en" onclick="setLang('en')">EN</button>
+        <button class="opt-btn" id="ol-uk" onclick="setLang('uk')">UA</button>
+        <button class="opt-btn" id="ol-ru" onclick="setLang('ru')">RU</button>
+      </div>
+    </div>
+    <div class="srow">
+      <div class="slabel" data-i18n="theme">Тема</div>
+      <div class="opt-row">
+        <button class="opt-btn" id="ot-default" onclick="setTheme('default')" data-i18n="thDefault">Стандарт</button>
+        <button class="opt-btn" id="ot-white"   onclick="setTheme('white')"   data-i18n="thWhite">Світла</button>
+        <button class="opt-btn" id="ot-black"   onclick="setTheme('black')"   data-i18n="thBlack">Темна</button>
+      </div>
+    </div>
+    <div class="srow">
+      <div class="slabel" data-i18n="changeNick">Змінити нікнейм</div>
+      <button class="opt-btn" onclick="goChangeNick()" data-i18n="changeBtn">Змінити</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== МОДАЛКА: ТАБЛИЦЯ ЛІДЕРІВ ==================== -->
+<div id="modal-lb" class="overlay hidden">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" data-i18n="leaderboard">Таблиця лідерів</div>
+      <button class="x-btn" onclick="closeModal('modal-lb')">✕</button>
+    </div>
+    <div id="lb-body"></div>
+  </div>
+</div>
+
+<!-- ==================== МОДАЛКА: РІВЕНЬ ПРОЙДЕНО ==================== -->
+<div id="modal-lc" class="overlay hidden">
+  <div class="modal">
+    <div class="lc-wrap">
+      <span class="lc-emoji" id="lc-emoji">🎉</span>
+      <div class="lc-title" id="lc-title" data-i18n="levelDone">Рівень пройдено!</div>
+      <div class="lc-sub" id="lc-sub"></div>
+      <div class="lc-stats">
+        <div class="lc-stat">
+          <span class="lc-val" id="lc-lvl">1</span>
+          <span class="lc-lbl" data-i18n="levelWord">Рівень</span>
+        </div>
+        <div class="lc-stat">
+          <span class="lc-val" id="lc-score">0</span>
+          <span class="lc-lbl" data-i18n="scoreWord">Очки</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="nextLevel()" data-i18n="nextLvl">НАСТУПНИЙ РІВЕНЬ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Конфеті -->
+<div id="confetti-box"></div>
 
 <script>
-    // --- ДАНІ ТА СТАН ГРИ ---
-    let gameState = {
-        nickname: null,
-        level: 1,
-        bestLevel: 1,
-        sound: true,
-        lang: 'uk',
-        theme: 'standard'
-    };
+/* ============================================================
+   ПЕРЕКЛАДИ
+============================================================ */
+const TR = {
+  en:{
+    tagline:"Fill the grid. Beat the level.",
+    enterName:"Your nickname",nickPh:"Enter nickname...",
+    playBtn:"PLAY",continueBtn:"CONTINUE GAME",
+    nickEmpty:"Please enter a nickname",nickShort:"Minimum 2 characters",
+    nickTaken:"This nickname is already taken!",
+    settings:"Settings",sound:"Sound",language:"Language",theme:"Theme",
+    thDefault:"Default",thWhite:"Light",thBlack:"Dark",
+    changeNick:"Change nickname",changeBtn:"Change",
+    leaderboard:"Leaderboard",levelDone:"Level Complete!",
+    levelWord:"Level",scoreWord:"Score",nextLvl:"NEXT LEVEL",
+    piecesLeft:"Pieces left:",dragHint:"Drag pieces to the grid ✦",
+    player:"Player",rankCol:"#",levelCol:"Level",ptsCol:"Score",
+    noPlayers:"No players yet. Be the first!",pts:"pts",
+  },
+  uk:{
+    tagline:"Заповни сітку. Пройди рівень.",
+    enterName:"Твій нікнейм",nickPh:"Введи нікнейм...",
+    playBtn:"ГРАТИ",continueBtn:"ПРОДОВЖИТИ ГРУ",
+    nickEmpty:"Введи нікнейм",nickShort:"Мінімум 2 символи",
+    nickTaken:"Цей нікнейм вже зайнятий!",
+    settings:"Налаштування",sound:"Звук",language:"Мова",theme:"Тема",
+    thDefault:"Стандарт",thWhite:"Світла",thBlack:"Темна",
+    changeNick:"Змінити нікнейм",changeBtn:"Змінити",
+    leaderboard:"Таблиця лідерів",levelDone:"Рівень пройдено!",
+    levelWord:"Рівень",scoreWord:"Очки",nextLvl:"НАСТУПНИЙ РІВЕНЬ",
+    piecesLeft:"Фігур залишилось:",dragHint:"Перетягуй фігури в сітку ✦",
+    player:"Гравець",rankCol:"№",levelCol:"Рівень",ptsCol:"Очки",
+    noPlayers:"Поки немає гравців. Будь першим!",pts:"очок",
+  },
+  ru:{
+    tagline:"Заполни сетку. Пройди уровень.",
+    enterName:"Твой никнейм",nickPh:"Введи никнейм...",
+    playBtn:"ИГРАТЬ",continueBtn:"ПРОДОЛЖИТЬ ИГРУ",
+    nickEmpty:"Введи никнейм",nickShort:"Минимум 2 символа",
+    nickTaken:"Этот никнейм уже занят!",
+    settings:"Настройки",sound:"Звук",language:"Язык",theme:"Тема",
+    thDefault:"Стандарт",thWhite:"Светлая",thBlack:"Темная",
+    changeNick:"Изменить никнейм",changeBtn:"Изменить",
+    leaderboard:"Таблица лидеров",levelDone:"Уровень пройден!",
+    levelWord:"Уровень",scoreWord:"Очки",nextLvl:"СЛЕДУЮЩИЙ УРОВЕНЬ",
+    piecesLeft:"Фигур осталось:",dragHint:"Перетаскивай фигуры в сетку ✦",
+    player:"Игрок",rankCol:"№",levelCol:"Уровень",ptsCol:"Очки",
+    noPlayers:"Игроков пока нет. Будь первым!",pts:"очков",
+  }
+};
 
-    // Імітація глобальної бази даних лідерів у localStorage
-    let globalLeaderboard = [];
+/* ============================================================
+   КОЛЬОРИ ФІГУР
+============================================================ */
+const PC = {
+  default:['#FF6B8A','#4ECDC4','#F5C842','#A78BFA','#FF8B94','#06D6A0','#FFB347','#74B9FF','#FD79A8','#55EFC4','#FDCB6E','#81ECEC'],
+  white:  ['#FF8A80','#4DD0E1','#FFB74D','#BA68C8','#FF8A65','#81C784','#FDD835','#64B5F6','#F06292','#4DB6AC','#FFD54F','#90A4AE'],
+  black:  ['#D32F2F','#0097A7','#F57C00','#7B1FA2','#E64A19','#388E3C','#FBC02D','#1976D2','#C2185B','#00796B','#FFA000','#455A64'],
+};
 
-    let board = { size: 3, grid: [], cellSize: 0 };
-    let currentPieces = [];
-    let placedPiecesCount = 0;
-    let draggedPiece = null;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-    let startDockSlot = null;
+/* ============================================================
+   СТАН ГРИ (STATE)
+============================================================ */
+let S = {
+  lang:'uk', theme:'default', sound:true,
+  player:null,        
+  currentLevel:1, currentScore:0,
+  ld:null,            // дані рівня: {gridSize,pieces,solutionGrid}
+  placed:new Set(),   // ID поставлених фігур
+  gg:[],              // ігрова сітка [r][c] = pieceId або -1
+  cellSize:40,        // Базовий розмір клітинки сітки
+  drag:null,          // Стан перетягування
+  existingPlayer:null,
+};
 
-    // --- ЛОКАЛІЗАЦІЯ ---
-    const dict = {
-        uk: {
-            level_title: "Рівень", settings: "Налаштування", sound: "Звук", 
-            leaderboard: "Топ Гравців", close: "Закрити", win: "Рівень Пройдено!",
-            ready_next: "Фігури ідеально зійшлись!", next_level: "Наступний Рівень",
-            welcome: "Вітаємо!", enter_name: "Придумайте унікальне ім'я гравця.",
-            ready: "Готово", err_empty: "Введіть нікнейм!", err_exists: "Цей нік уже зайнято!",
-            theme: "Дизайн", theme_std: "Стандарт (Скло)", theme_light: "Світлий мінімалізм", theme_dark: "Темний мінімалізм"
-        },
-        en: {
-            level_title: "Level", settings: "Settings", sound: "Sound", 
-            leaderboard: "Leaderboard", close: "Close", win: "Level Complete!",
-            ready_next: "Perfect fit!", next_level: "Next Level",
-            welcome: "Welcome!", enter_name: "Create a unique player name.",
-            ready: "Ready", err_empty: "Enter a nickname!", err_exists: "Nickname already taken!",
-            theme: "Theme", theme_std: "Standard (Glass)", theme_light: "Light Minimal", theme_dark: "Dark Minimal"
-        }
-    };
-
-    // --- ЗВУК (Web Audio API) ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(type) {
-        if (!gameState.sound) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        
-        if (type === 'pickup') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'drop') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(400, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.15);
-            osc.start(now); osc.stop(now + 0.15);
-        } else if (type === 'snap') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(600, now); osc.frequency.setValueAtTime(800, now + 0.05);
-            gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'win') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(500, now + 0.1); osc.frequency.setValueAtTime(800, now + 0.3);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
-            osc.start(now); osc.stop(now + 0.5);
-        }
+/* ============================================================
+   АУДІО
+============================================================ */
+let _actx = null;
+function getACtx(){
+  if(!_actx) _actx=new(window.AudioContext||window.webkitAudioContext)();
+  return _actx;
+}
+function beep(type){
+  if(!S.sound) return;
+  try{
+    const a=getACtx();
+    if(type==='place'){
+      const o=a.createOscillator(),g=a.createGain();
+      o.connect(g);g.connect(a.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(400,a.currentTime);
+      o.frequency.exponentialRampToValueAtTime(700,a.currentTime+.1);
+      g.gain.setValueAtTime(.15,a.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.15);
+      o.start(a.currentTime);o.stop(a.currentTime+.15);
+    } else if(type==='bad'){
+      const o=a.createOscillator(),g=a.createGain();
+      o.connect(g);g.connect(a.destination);
+      o.type='triangle';
+      o.frequency.setValueAtTime(200,a.currentTime);
+      o.frequency.exponentialRampToValueAtTime(120,a.currentTime+.15);
+      g.gain.setValueAtTime(.1,a.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.15);
+      o.start(a.currentTime);o.stop(a.currentTime+.15);
+    } else if(type==='win'){
+      [523,659,784,1047].forEach((f,i)=>{
+        const o=a.createOscillator(),g=a.createGain();
+        o.connect(g);g.connect(a.destination);
+        o.type='sine';o.frequency.value=f;
+        const t=a.currentTime+i*.1;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(.15,t+.03);
+        g.gain.exponentialRampToValueAtTime(.001,t+.2);
+        o.start(t);o.stop(t+.2);
+      });
+    } else if (type === 'take') { // Новий звук для зняття фігури
+      const o=a.createOscillator(),g=a.createGain();
+      o.connect(g);g.connect(a.destination);
+      o.type='sine';
+      o.frequency.setValueAtTime(600,a.currentTime);
+      o.frequency.exponentialRampToValueAtTime(300,a.currentTime+.1);
+      g.gain.setValueAtTime(.1,a.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.1);
+      o.start(a.currentTime);o.stop(a.currentTime+.1);
     }
+  }catch(e){}
+}
 
-    // --- ІНІЦІАЛІЗАЦІЯ ---
-    function init() {
-        loadData();
-        loadGlobalLeaderboard();
-        
-        updateLanguageUI();
-        updateSoundUI();
-        setTheme(gameState.theme);
+/* ============================================================
+   МОВА ТА ТЕМА
+============================================================ */
+function t(k){return(TR[S.lang]||TR.uk)[k]||k;}
 
-        window.addEventListener('resize', () => { calculateCellSize(); repositionPiecesOnBoard(); });
+function setLang(lang){
+  S.lang=lang;
+  document.querySelectorAll('.lang-row .lang-btn').forEach(b=>{
+    b.classList.toggle('active',b.getAttribute('onclick').includes(`'${lang}'`));
+  });
+  ['en','uk','ru'].forEach(l=>{
+    const el=document.getElementById(`ol-${l}`);
+    if(el) el.classList.toggle('active',l===lang);
+  });
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    if(el.tagName!=='INPUT') el.textContent=t(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    el.placeholder=t(el.dataset.i18nPh);
+  });
+  if(S.ld){
+    document.getElementById('level-pill').textContent=`${t('levelWord').toUpperCase()} ${S.currentLevel}`;
+    document.getElementById('score-txt').textContent=`${S.currentScore} ${t('pts')}`;
+  }
+  saveSettings();
+  onNickInput();
+}
 
-        document.getElementById('btn-lang').addEventListener('click', () => {
-            gameState.lang = gameState.lang === 'uk' ? 'en' : 'uk';
-            saveData(); updateLanguageUI();
-        });
+function setTheme(th){
+  S.theme=th;
+  document.body.className=th==='default'?'theme-default':`theme-${th}`;
+  ['default','white','black'].forEach(x=>{
+    const el=document.getElementById(`ot-${x}`);
+    if(el) el.classList.toggle('active',x===th);
+  });
+  if(S.ld) rerenderPieceColors();
+  saveSettings();
+}
 
-        document.getElementById('toggle-sound').addEventListener('click', () => {
-            gameState.sound = !gameState.sound;
-            saveData(); updateSoundUI();
-        });
+function rerenderPieceColors(){
+  const cols=PC[S.theme]||PC.default;
+  S.ld.pieces.forEach((p,i)=>{ p.color=cols[i%cols.length]; });
+  const {gridSize}=S.ld;
+  for(let r=0;r<gridSize;r++)
+    for(let c=0;c<gridSize;c++)
+      if(S.gg[r][c]>=0) paintCell(r,c);
+  renderPieces();
+}
 
-        if (!gameState.nickname) {
-            openModal('login-modal');
-        } else {
-            showPlayerBadge();
-            startLevel();
-        }
+/* ============================================================
+   ЗБЕРЕЖЕННЯ / ЗАВАНТАЖЕННЯ
+============================================================ */
+function saveSettings(){
+  localStorage.setItem('bf_cfg_v2',JSON.stringify({lang:S.lang,theme:S.theme,sound:S.sound}));
+}
+function loadSettings(){
+  try{
+    const c=JSON.parse(localStorage.getItem('bf_cfg_v2')||'{}');
+    S.lang=c.lang||'uk';S.theme=c.theme||'default';S.sound=c.sound!==undefined?c.sound:true;
+  }catch{}
+}
+function getPlayers(){
+  try{return JSON.parse(localStorage.getItem('bf_players_v2')||'[]');}catch{return[];}
+}
+function savePlayers(arr){localStorage.setItem('bf_players_v2',JSON.stringify(arr));}
+function saveProgress(){
+  if(!S.player) return;
+  const arr=getPlayers();
+  const i=arr.findIndex(p=>p.name===S.player.name);
+  const d={name:S.player.name,level:S.currentLevel,score:S.currentScore};
+  if(i>=0) arr[i]=d; else arr.push(d);
+  savePlayers(arr);
+  S.player=d;
+}
+window.addEventListener('pagehide',saveProgress);
+window.addEventListener('beforeunload',saveProgress);
+window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') saveProgress(); });
+
+/* ============================================================
+   УПРАВЛІННЯ ВІКНАМИ ТА ЛОГІН
+============================================================ */
+function toggleSound(){
+  S.sound=!S.sound;
+  document.getElementById('snd-toggle').classList.toggle('on',S.sound);
+  saveSettings();
+}
+
+function onNickInput(){
+  const v=document.getElementById('nick-input').value.trim();
+  const msg=document.getElementById('nick-msg');
+  const contBtn=document.getElementById('continue-btn');
+  const playBtn=document.getElementById('play-btn');
+
+  msg.className='msg-box'; msg.textContent='';
+  document.getElementById('nick-input').className='nick-input';
+  contBtn.classList.add('hidden');
+  playBtn.dataset.i18n='playBtn'; playBtn.textContent=t('playBtn');
+  S.existingPlayer=null;
+
+  if(v.length===0) return;
+  const players=getPlayers();
+  const found=players.find(p=>p.name.toLowerCase()===v.toLowerCase());
+  if(found){
+    msg.classList.add('yellow'); msg.textContent=t('nickTaken');
+    document.getElementById('nick-input').classList.add('warn');
+    contBtn.classList.remove('hidden');
+    S.existingPlayer=found;
+  }
+}
+
+function handlePlay(){
+  const v=document.getElementById('nick-input').value.trim();
+  const msg=document.getElementById('nick-msg');
+  msg.className='msg-box'; document.getElementById('nick-input').className='nick-input';
+
+  if(!v){ msg.classList.add('red');msg.textContent=t('nickEmpty'); document.getElementById('nick-input').classList.add('error');return; }
+  if(v.length<2){ msg.classList.add('red');msg.textContent=t('nickShort'); document.getElementById('nick-input').classList.add('error');return; }
+  
+  const found=getPlayers().find(p=>p.name.toLowerCase()===v.toLowerCase());
+  if(found){
+    msg.classList.add('yellow');msg.textContent=t('nickTaken');
+    document.getElementById('nick-input').classList.add('warn');
+    document.getElementById('continue-btn').classList.remove('hidden');
+    S.existingPlayer=found;
+    return;
+  }
+  
+  S.player={name:v,level:1,score:0};
+  S.currentLevel=1;S.currentScore=0;
+  saveProgress();
+  startGame();
+}
+
+function handleContinue(){
+  if(!S.existingPlayer) return;
+  S.player=S.existingPlayer;
+  S.currentLevel=S.existingPlayer.level||1;
+  S.currentScore=S.existingPlayer.score||0;
+  startGame();
+}
+
+function goChangeNick(){
+  closeModal('modal-settings');
+  saveProgress();
+  showScreen('screen-welcome');
+  document.getElementById('nick-input').value='';
+  document.getElementById('nick-msg').textContent='';
+  document.getElementById('continue-btn').classList.add('hidden');
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function showModal(id){document.getElementById(id).classList.remove('hidden');}
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+
+/* ============================================================
+   ГЕНЕРАЦІЯ ТА ЗАВАНТАЖЕННЯ РІВНЯ
+============================================================ */
+function startGame(){
+  showScreen('screen-game');
+  document.getElementById('player-chip').textContent=S.player.name;
+  loadLevel(S.currentLevel);
+}
+
+function getLvlCfg(lvl){
+  const gs=Math.min(4+Math.floor((lvl-1)/3),8);
+  const maxPiece=Math.max(2,Math.min(6,8-Math.floor((lvl-1)/4)));
+  const minPiece=Math.max(2,maxPiece-2);
+  return{gridSize:gs,minPiece,maxPiece};
+}
+
+function generateLevel(lvl){
+  const{gridSize,minPiece,maxPiece}=getLvlCfg(lvl);
+  const grid=Array.from({length:gridSize},()=>new Array(gridSize).fill(-1));
+  const pieces=[];
+  const cols=PC[S.theme]||PC.default;
+  let pid=0;
+
+  while(true){
+    let sr=-1,sc=-1;
+    outer:for(let r=0;r<gridSize;r++)for(let c=0;c<gridSize;c++)if(grid[r][c]===-1){sr=r;sc=c;break outer;}
+    if(sr===-1) break;
+
+    const target=minPiece+Math.floor(Math.random()*(maxPiece-minPiece+1));
+    const absCells=growPiece(grid,sr,sc,target,gridSize);
+    absCells.forEach(([r,c])=>grid[r][c]=pid);
+
+    const normCells=normCells_(absCells);
+    pieces.push({ id:pid, cells:normCells, color:cols[pid%cols.length] });
+    pid++;
+  }
+
+  for(let i=pieces.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pieces[i],pieces[j]]=[pieces[j],pieces[i]];
+  }
+  return{gridSize,pieces,solutionGrid:grid.map(r=>[...r])};
+}
+
+function growPiece(grid,sr,sc,target,gs){
+  const cells=[[sr,sc]];
+  const dirs=[[0,1],[0,-1],[1,0],[-1,0]];
+  let tries=0;
+  while(cells.length<target&&tries<2000){
+    tries++;
+    const frontier=[];
+    for(const[r,c]of cells){
+      for(const[dr,dc]of dirs){
+        const nr=r+dr,nc=c+dc;
+        if(nr>=0&&nr<gs&&nc>=0&&nc<gs&&grid[nr][nc]===-1&&!cells.some(([pr,pc])=>pr===nr&&pc===nc))
+          frontier.push([nr,nc]);
+      }
     }
+    if(!frontier.length) break;
+    cells.push(frontier[Math.floor(Math.random()*frontier.length)]);
+  }
+  return cells;
+}
 
-    // --- РОБОТА З ДАНИМИ ТА ЛІДЕРБОРДОМ ---
-    function loadData() {
-        const saved = localStorage.getItem('blockPuzzleLocal');
-        if (saved) gameState = { ...gameState, ...JSON.parse(saved) };
+function normCells_(cells){
+  const mr=Math.min(...cells.map(([r])=>r));
+  const mc=Math.min(...cells.map(([,c])=>c));
+  return cells.map(([r,c])=>[r-mr,c-mc]);
+}
+
+function loadLevel(lvl){
+  S.ld=generateLevel(lvl);
+  S.placed=new Set();
+  S.gg=Array.from({length:S.ld.gridSize},()=>new Array(S.ld.gridSize).fill(-1));
+
+  document.getElementById('level-pill').textContent=`${t('levelWord').toUpperCase()} ${lvl}`;
+  document.getElementById('score-txt').textContent=`${S.currentScore} ${t('pts')}`;
+
+  renderGrid();
+  renderPieces();
+  updatePLeft();
+}
+
+/* ============================================================
+   РЕНДЕР СІТКИ ТА ФІГУР
+============================================================ */
+function calcCellSize(){
+  const body=document.getElementById('game-body');
+  const br=body.getBoundingClientRect();
+  const panelH=Math.min(130, br.height*0.25);
+  const infoH=40, hintH=30, gapH=60;
+  const avW=br.width-32;
+  const avH=br.height-panelH-infoH-hintH-gapH;
+  const maxD=Math.min(avW, avH, 450);
+  // Віднімаємо 12 пікселів (2 * 6px padding сітки)
+  const sz=Math.max(25, Math.floor((maxD - 12) / S.ld.gridSize));
+  return sz;
+}
+
+function renderGrid(){
+  const cs=calcCellSize();
+  S.cellSize=cs;
+  const{gridSize}=S.ld;
+  const g=document.getElementById('puzzle-grid');
+  g.style.gridTemplateColumns=`repeat(${gridSize},${cs}px)`;
+  g.style.gridTemplateRows=`repeat(${gridSize},${cs}px)`;
+  g.innerHTML='';
+  for(let r=0;r<gridSize;r++){
+    for(let c=0;c<gridSize;c++){
+      const el=document.createElement('div');
+      el.className='gc';
+      el.style.width=el.style.height=cs+'px';
+      el.dataset.r=r; el.dataset.c=c;
+      g.appendChild(el);
     }
+  }
+}
 
-    function saveData() {
-        if (gameState.level > gameState.bestLevel) gameState.bestLevel = gameState.level;
-        localStorage.setItem('blockPuzzleLocal', JSON.stringify(gameState));
-        updateGlobalLeaderboard();
+function cellEl(r,c){
+  return document.querySelector(`#puzzle-grid .gc[data-r="${r}"][data-c="${c}"]`);
+}
+
+function paintCell(r,c){
+  const el=cellEl(r,c);if(!el) return;
+  const pid=S.gg[r][c];
+  if(pid>=0){
+    const p=S.ld.pieces.find(x=>x.id===pid);
+    el.style.background=p?p.color:'';
+    el.classList.add('filled');
+    // Додаємо тінь і об'єм як у фігур
+    el.style.boxShadow = `inset 0 3px 0 ${getComputedStyle(document.body).getPropertyValue('--piece-shine').trim()}, inset 0 -3px 0 ${getComputedStyle(document.body).getPropertyValue('--piece-shadow').trim()}`;
+    el.style.borderColor = 'transparent';
+  } else {
+    el.style.background='';
+    el.classList.remove('filled');
+    el.style.boxShadow = '';
+    el.style.borderColor = '';
+  }
+}
+
+function renderPieces(){
+  const panel=document.getElementById('pieces-panel');
+  panel.innerHTML='';
+  
+  // Щоб фігури в панелі не були занадто великими, масштабуємо їх візуально, 
+  // але сам DOM розмір клітинки залишаємо S.cellSize
+  const maxPanelCellSize = 35;
+  const scale = S.cellSize > maxPanelCellSize ? maxPanelCellSize / S.cellSize : 1;
+
+  for(const p of S.ld.pieces){
+    if(S.placed.has(p.id)) continue;
+    const rows=Math.max(...p.cells.map(([r])=>r))+1;
+    const cols=Math.max(...p.cells.map(([,c])=>c))+1;
+    
+    const wrap=document.createElement('div');
+    wrap.className='piece-wrap';
+    wrap.dataset.pid=p.id;
+    // Встановлюємо реальний розмір
+    wrap.style.gridTemplateColumns=`repeat(${cols},${S.cellSize}px)`;
+    wrap.style.gridTemplateRows=`repeat(${rows},${S.cellSize}px)`;
+    wrap.style.gap='2px';
+    // Масштабуємо для панелі
+    wrap.style.transform = `scale(${scale})`;
+    // Компенсуємо розмір марджинами, щоб не займало зайве місце після скейлу
+    const w = cols * S.cellSize + (cols - 1)*2;
+    const h = rows * S.cellSize + (rows - 1)*2;
+    wrap.style.margin = `${-(h - h*scale)/2}px ${-(w - w*scale)/2}px`;
+
+    for(let r=0;r<rows;r++){
+      for(let c=0;c<cols;c++){
+        const filled=p.cells.some(([pr,pc])=>pr===r&&pc===c);
+        const cell=document.createElement('div');
+        cell.className=`pc ${filled?'on':'off'}`;
+        if(filled) cell.style.background=p.color;
+        wrap.appendChild(cell);
+      }
     }
+    
+    // Початок перетягування з панелі
+    wrap.addEventListener('pointerdown', e => startDrag(p.id, e, false), {passive:false});
+    panel.appendChild(wrap);
+  }
+  updatePLeft();
+}
 
-    function loadGlobalLeaderboard() {
-        const db = localStorage.getItem('blockPuzzleDB');
-        if (db) {
-            globalLeaderboard = JSON.parse(db);
-        } else {
-            // Фейкові початкові дані
-            globalLeaderboard = [
-                { name: "MasterMind", level: 12 },
-                { name: "PuzzleKing", level: 8 },
-                { name: "Noob123", level: 3 }
-            ];
-            saveGlobalLeaderboard();
-        }
+function updatePLeft(){
+  document.getElementById('pcs-left').textContent=S.ld.pieces.length-S.placed.size;
+}
+
+/* ============================================================
+   ПЕРЕТЯГУВАННЯ (DRAG & DROP)
+============================================================ */
+document.addEventListener('pointermove', onDragMove, {passive:false});
+document.addEventListener('pointerup', onDragEnd, {passive:false});
+document.addEventListener('pointercancel', onDragEnd, {passive:false});
+
+// Додаємо обробник кліків по сітці для "забирання" фігур
+document.getElementById('puzzle-grid').addEventListener('pointerdown', e => {
+  const el = e.target.closest('.gc');
+  if(!el) return;
+  const r = parseInt(el.dataset.r);
+  const c = parseInt(el.dataset.c);
+  const pid = S.gg[r][c];
+  
+  if(pid >= 0) {
+    e.preventDefault();
+    takeBackPiece(pid, e);
+  }
+}, {passive: false});
+
+function takeBackPiece(pid, e) {
+  const p = S.ld.pieces.find(x => x.id === pid);
+  if(!p) return;
+
+  // Очищаємо сітку
+  for(let r=0; r<S.ld.gridSize; r++){
+    for(let c=0; c<S.ld.gridSize; c++){
+      if(S.gg[r][c] === pid) {
+        S.gg[r][c] = -1;
+        paintCell(r, c);
+      }
     }
+  }
+  
+  S.placed.delete(pid);
+  updatePLeft();
+  beep('take');
+  
+  // Починаємо перетягування (вказуємо, що ми взяли її з сітки)
+  startDrag(pid, e, true);
+}
 
-    function saveGlobalLeaderboard() {
-        localStorage.setItem('blockPuzzleDB', JSON.stringify(globalLeaderboard));
+function startDrag(pid, e, fromGrid) {
+  e.preventDefault(); e.stopPropagation();
+  const p = S.ld.pieces.find(x => x.id === pid);
+  if(!p) return;
+
+  const cs = S.cellSize; // Завжди однаковий розмір!
+  const rows = Math.max(...p.cells.map(([r])=>r))+1;
+  const cols = Math.max(...p.cells.map(([,c])=>c))+1;
+
+  // Створюємо плаваючий елемент
+  const fl = document.createElement('div');
+  fl.className = 'float-piece';
+  fl.style.gridTemplateColumns = `repeat(${cols},${cs}px)`;
+  fl.style.gridTemplateRows = `repeat(${rows},${cs}px)`;
+  fl.style.gap = '2px';
+
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const filled = p.cells.some(([pr,pc])=>pr===r&&pc===c);
+      const cell = document.createElement('div');
+      cell.className = `pc ${filled?'on':'off'}`;
+      if(filled) cell.style.background = p.color;
+      fl.appendChild(cell);
     }
+  }
+  document.body.appendChild(fl);
 
-    function updateGlobalLeaderboard() {
-        if (!gameState.nickname) return;
-        let player = globalLeaderboard.find(p => p.name === gameState.nickname);
-        if (player) {
-            if (gameState.bestLevel > player.level) player.level = gameState.bestLevel;
-        } else {
-            globalLeaderboard.push({ name: gameState.nickname, level: gameState.bestLevel });
-        }
-        saveGlobalLeaderboard();
+  let offsetX, offsetY;
+
+  if (fromGrid) {
+    // Якщо взяли з сітки, ідеально центруємо за курсором або за місцем кліку
+    const el = e.target.closest('.gc');
+    if(el) {
+      const rect = el.getBoundingClientRect();
+      // Визначаємо яку саме частину фігури клікнули (local r, c)
+      const clickedGridR = parseInt(el.dataset.r);
+      const clickedGridC = parseInt(el.dataset.c);
+      
+      // Знаходимо верхній лівий кут фігури на сітці
+      let minR = 99, minC = 99;
+      p.cells.forEach(([dr, dc]) => {
+        // Оскільки ми вже зняли її з сітки, ми не можемо знайти її в gg.
+        // Але ми знаємо, що clickedGridR, clickedGridC належить фігурі.
+      });
+      // Спрощений підхід для ідеального позиціонування: 
+      // центрируем фігуру навколо мишки, або розраховуємо зсув.
+      // Для плавності просто центруємо плаваючу фігуру
+      offsetX = (cols * cs) / 2;
+      offsetY = (rows * cs) / 2;
     }
-
-    // --- ЛОГІКА РЕЄСТРАЦІЇ ---
-    function saveNickname() {
-        const input = document.getElementById('nickname-input').value.trim();
-        const errEl = document.getElementById('login-error');
-        const l = dict[gameState.lang];
-
-        if (!input) {
-            errEl.innerText = l.err_empty;
-            return;
-        }
-
-        // Перевірка чи існує нік
-        const exists = globalLeaderboard.some(p => p.name.toLowerCase() === input.toLowerCase());
-        if (exists) {
-            errEl.innerText = l.err_exists;
-            return;
-        }
-
-        gameState.nickname = input;
-        saveData();
-        closeModal('login-modal');
-        showPlayerBadge();
-        startLevel();
+  } else {
+    // Якщо взяли з панелі
+    const wrap = e.currentTarget;
+    if(wrap) {
+      // Ховаємо оригінал у панелі
+      wrap.style.opacity = '0';
+      wrap.style.pointerEvents = 'none';
     }
+    offsetX = (cols * cs) / 2;
+    offsetY = (rows * cs) / 2;
+  }
 
-    function showPlayerBadge() {
-        const badge = document.getElementById('player-badge');
-        const nameEl = document.getElementById('display-nickname');
-        badge.classList.remove('hidden');
-        badge.classList.add('flex');
-        nameEl.innerText = gameState.nickname;
+  fl.style.left = (e.clientX - offsetX) + 'px';
+  fl.style.top = (e.clientY - offsetY) + 'px';
+
+  S.drag = { pid, piece:p, floatEl:fl, offsetX, offsetY, targetR:undefined, targetC:undefined, source: fromGrid ? 'grid' : 'panel' };
+  document.body.style.userSelect = 'none';
+  
+  // Примусово викликаємо рух, щоб відразу підсвітити, якщо курсор над сіткою
+  onDragMove(e);
+}
+
+function onDragMove(e){
+  if(!S.drag) return;
+  e.preventDefault();
+  const {floatEl, offsetX, offsetY, piece} = S.drag;
+  
+  const nx = e.clientX - offsetX;
+  const ny = e.clientY - offsetY;
+  floatEl.style.left = nx + 'px';
+  floatEl.style.top = ny + 'px';
+
+  clearHighlight();
+
+  // Визначаємо комірку під курсором (точка прив'язки - лівий верхній кут фігури + половина клітинки)
+  const anchorX = nx + (S.cellSize / 2);
+  const anchorY = ny + (S.cellSize / 2);
+  
+  const gr = document.getElementById('puzzle-grid').getBoundingClientRect();
+  const {gridSize} = S.ld;
+  const cw = (gr.width - 12) / gridSize; // -12 через padding 6px
+  const ch = (gr.height - 12) / gridSize;
+
+  // Перевіряємо чи ми над сіткою
+  if (anchorX < gr.left || anchorX > gr.right || anchorY < gr.top || anchorY > gr.bottom) {
+    S.drag.targetR = undefined;
+    S.drag.targetC = undefined;
+    return;
+  }
+
+  const tc = Math.floor((anchorX - (gr.left + 6)) / cw);
+  const tr = Math.floor((anchorY - (gr.top + 6)) / ch);
+  S.drag.targetR = tr; S.drag.targetC = tc;
+
+  const valid = canPlace(piece, tr, tc);
+  for(const[dr, dc] of piece.cells){
+    const el = cellEl(tr + dr, tc + dc);
+    if(el) el.classList.add(valid ? 'hv-ok' : 'hv-no');
+  }
+}
+
+function onDragEnd(e){
+  if(!S.drag) return;
+  e.preventDefault();
+  const {pid, piece, floatEl, targetR, targetC, source} = S.drag;
+  clearHighlight();
+  floatEl.remove();
+
+  if(targetR !== undefined && targetC !== undefined && canPlace(piece, targetR, targetC)){
+    // Ставимо на сітку
+    placePiece(pid, targetR, targetC);
+    // Якщо фігура була з панелі, видаляємо її DOM елемент з панелі
+    const wrap = document.querySelector(`.piece-wrap[data-pid="${pid}"]`);
+    if(wrap) wrap.remove();
+  } else {
+    // Неможливо поставити -> повертаємо
+    beep('bad');
+    if (source === 'grid') {
+      // Якщо брали з сітки і кинули повз, треба знову відрендерити її в панелі
+      renderPieces();
+    } else {
+      // Якщо брали з панелі, просто показуємо її назад
+      const wrap = document.querySelector(`.piece-wrap[data-pid="${pid}"]`);
+      if(wrap) {
+        wrap.style.opacity = '1';
+        wrap.style.pointerEvents = 'auto';
+      }
     }
+  }
 
-    // --- UI ТА ТЕМИ ---
-    function setTheme(themeName) {
-        gameState.theme = themeName;
-        document.documentElement.setAttribute('data-theme', themeName);
-        saveData();
+  S.drag = null;
+  document.body.style.userSelect = '';
+}
 
-        // Оновлення кнопок вибору теми
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            btn.dataset.active = btn.dataset.themeId === themeName ? "true" : "false";
-        });
-    }
+function clearHighlight(){
+  document.querySelectorAll('.gc.hv-ok,.gc.hv-no').forEach(el=>{
+    el.classList.remove('hv-ok','hv-no');
+  });
+}
 
-    function updateLanguageUI() {
-        const l = dict[gameState.lang];
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (key === 'level_title') {
-                el.innerHTML = ` <span id="level-display"></span>`;
-            } else if (l[key]) el.innerText = l[key];
-        });
-        document.getElementById('nickname-input').placeholder = gameState.lang === 'uk' ? "Гравець123" : "Player123";
-        if(document.getElementById('leaderboard-modal').classList.contains('active')) generateLeaderboardUI();
-    }
+function canPlace(piece, tr, tc){
+  const{gridSize}=S.ld;
+  for(const[dr,dc]of piece.cells){
+    const r=tr+dr,c=tc+dc;
+    if(r<0||r>=gridSize||c<0||c>=gridSize) return false;
+    if(S.gg[r][c]!==-1) return false;
+  }
+  return true;
+}
 
-    function updateSoundUI() {
-        const btn = document.getElementById('toggle-sound');
-        const ind = document.getElementById('sound-indicator');
-        if (gameState.sound) {
-            btn.classList.replace('bg-gray-500', 'bg-blue-500');
-            ind.style.transform = 'translateX(0)'; ind.style.left = 'auto'; ind.style.right = '2px';
-        } else {
-            btn.classList.replace('bg-blue-500', 'bg-gray-500');
-            ind.style.transform = 'translateX(0)'; ind.style.right = 'auto'; ind.style.left = '2px';
-        }
-    }
+function placePiece(pid,tr,tc){
+  const p=S.ld.pieces.find(x=>x.id===pid);
+  for(const[dr,dc]of p.cells){
+    const r=tr+dr,c=tc+dc;
+    S.gg[r][c]=pid;
+    paintCell(r,c);
+    const el=cellEl(r,c);
+    if(el){el.classList.add('pa');el.addEventListener('animationend',()=>el.classList.remove('pa'),{once:true});}
+  }
+  S.placed.add(pid);
+  beep('place');
+  updatePLeft();
 
-    function generateLeaderboardUI() {
-        const list = document.getElementById('leaderboard-list');
-        const l = dict[gameState.lang];
-        
-        // Сортуємо
-        let sorted = [...globalLeaderboard].sort((a, b) => b.level - a.level);
-        
-        list.innerHTML = sorted.map((p, i) => {
-            const isMe = p.name === gameState.nickname;
-            let medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span class="text-sm font-bold w-5 inline-block text-center text-muted"></span>`;
-            let bgClass = isMe ? 'border border-blue-500 bg-blue-500/10' : 'border border-[var(--board-border)]';
-            
-            return `
-            <div class="flex justify-between items-center p-3 rounded-lg ">
-                <div class="flex items-center gap-3">
-                    
-                    <span class=" ''"></span>
-                </div>
-                <span class="font-bold"> </span>
-            </div>
-        `}).join('');
-    }
+  if(S.placed.size===S.ld.pieces.length) setTimeout(onWin,350);
+}
 
-    // --- ЛОГІКА ГРИ (Генерація, Drag&Drop) ---
-    function startLevel() {
-        placedPiecesCount = 0;
-        document.getElementById('board-container').classList.remove('win-anim');
-        
-        const l = dict[gameState.lang];
-        document.querySelector('[data-i18n="level_title"]').innerHTML = ` <span id="level-display"></span>`;
-        saveData();
+/* ============================================================
+   ПЕРЕМОГА ТА ЛІДЕРБОРД
+============================================================ */
+function onWin(){
+  const bonus=S.currentLevel*100+(S.ld.gridSize-4)*25;
+  S.currentScore+=bonus;
+  S.currentLevel++;
+  saveProgress();
+  updateLbEntry();
+  beep('win');
 
-        const sizes = [3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8];
-        board.size = sizes[Math.min(gameState.level - 1, sizes.length - 1)] || 8;
-        board.grid = Array(board.size).fill().map(() => Array(board.size).fill(null));
+  const fl=document.getElementById('grid-flash');
+  fl.classList.add('show');
+  setTimeout(()=>fl.classList.remove('show'),700);
 
-        currentPieces = generatePuzzle(board.size);
-        renderBoard();
-        renderDock();
-        calculateCellSize();
-    }
+  spawnConfetti();
 
-    function generatePuzzle(size) {
-        let tempGrid = Array(size).fill().map(() => Array(size).fill(0));
-        let pieces = [];
-        let pieceId = 1;
-        let maxPieceSize = Math.max(3, Math.floor(size * 1.5));
-        let minPieceSize = 2;
+  setTimeout(()=>{
+    document.getElementById('lc-emoji').textContent=levelEmoji(S.currentLevel-1);
+    document.getElementById('lc-title').textContent=t('levelDone');
+    document.getElementById('lc-sub').textContent=`+${bonus} ${t('pts')}`;
+    document.getElementById('lc-lvl').textContent=S.currentLevel-1;
+    document.getElementById('lc-score').textContent=S.currentScore;
+    document.getElementById('score-txt').textContent=`${S.currentScore} ${t('pts')}`;
+    showModal('modal-lc');
+  },700);
+}
 
-        while (true) {
-            let start = null;
-            for (let r = 0; r < size; r++) {
-                for (let c = 0; c < size; c++) { if (tempGrid[r][c] === 0) { start = {r, c}; break; } }
-                if (start) break;
-            }
-            if (!start) break;
+function levelEmoji(lvl){
+  const e=['🎉','⭐','🔥','💎','🚀','🌟','👑','🎊','✨','🏆','🌈','⚡'];
+  return e[(lvl-1)%e.length];
+}
 
-            let cells = [start];
-            tempGrid[start.r][start.c] = pieceId;
-            let targetSize = Math.floor(Math.random() * (maxPieceSize - minPieceSize + 1)) + minPieceSize;
+function nextLevel(){
+  closeModal('modal-lc');
+  loadLevel(S.currentLevel);
+}
 
-            for (let i = 1; i < targetSize; i++) {
-                let neighbors = [];
-                for (let cell of cells) {
-                    const dirs = [[0,1],[1,0],[0,-1],[-1,0]];
-                    for (let d of dirs) {
-                        let nr = cell.r + d[0], nc = cell.c + d[1];
-                        if (nr >= 0 && nr < size && nc >= 0 && nc < size && tempGrid[nr][nc] === 0) {
-                            if (!neighbors.some(n => n.r === nr && n.c === nc)) neighbors.push({r: nr, c: nc});
-                        }
-                    }
-                }
-                if (neighbors.length === 0) break;
-                let nextCell = neighbors[Math.floor(Math.random() * neighbors.length)];
-                cells.push(nextCell);
-                tempGrid[nextCell.r][nextCell.c] = pieceId;
-            }
-            pieces.push({ id: pieceId, cells: cells });
-            pieceId++;
-        }
+function updateLbEntry(){
+  const arr=getPlayers();
+  const i=arr.findIndex(p=>p.name===S.player.name);
+  const d={name:S.player.name,level:S.currentLevel-1,score:S.currentScore};
+  if(i>=0){if(d.level>=arr[i].level) arr[i]=d;}
+  else arr.push(d);
+  savePlayers(arr);
+}
 
-        return pieces.map((p, index) => {
-            let minR = Math.min(...p.cells.map(c => c.r)), minC = Math.min(...p.cells.map(c => c.c));
-            let maxR = Math.max(...p.cells.map(c => c.r)), maxC = Math.max(...p.cells.map(c => c.c));
-            let rows = maxR - minR + 1, cols = maxC - minC + 1;
-            let matrix = Array(rows).fill().map(() => Array(cols).fill(0));
-            p.cells.forEach(c => { matrix[c.r - minR][c.c - minC] = 1; });
-            return { id: p.id, rows: rows, cols: cols, matrix: matrix, colorClass: `color-` };
-        }).sort(() => Math.random() - 0.5);
-    }
+function showLeaderboard(){
+  const arr=getPlayers().sort((a,b)=>b.level-a.level||b.score-a.score).slice(0,10);
+  const modal=document.getElementById('modal-lb');
+  modal.querySelector('.modal-title').textContent=t('leaderboard');
 
-    function renderBoard() {
-        const gridEl = document.getElementById('board-grid');
-        gridEl.style.gridTemplateColumns = `repeat(, 1fr)`;
-        gridEl.style.gridTemplateRows = `repeat(, 1fr)`;
-        gridEl.innerHTML = '';
-        for (let r = 0; r < board.size; r++) {
-            for (let c = 0; c < board.size; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'board-cell';
-                gridEl.appendChild(cell);
-            }
-        }
-    }
+  let html='';
+  if(!arr.length){
+    html=`<div class="lb-empty">${t('noPlayers')}</div>`;
+  } else {
+    html=`<table class="lb-tbl"><thead><tr>
+      <th>${t('rankCol')}</th>
+      <th>${t('player')}</th>
+      <th>${t('levelCol')}</th>
+      <th>${t('ptsCol')}</th>
+    </tr></thead><tbody>`;
+    arr.forEach((p,i)=>{
+      const rc=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+      const rs=i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+      const me=S.player&&p.name===S.player.name;
+      html+=`<tr class="${me?'lb-me':''}">
+        <td class="lb-rnk ${rc}">${rs}</td>
+        <td>${esc(p.name)}${me?' ✓':''}</td>
+        <td>${p.level||1}</td>
+        <td>${p.score||0}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+  }
+  document.getElementById('lb-body').innerHTML=html;
+  showModal('modal-lb');
+}
 
-    function renderDock() {
-        const dock = document.getElementById('dock-container');
-        dock.innerHTML = '';
-        currentPieces.forEach(p => {
-            const slot = document.createElement('div');
-            slot.className = 'dock-slot';
-            slot.appendChild(createPieceElement(p));
-            dock.appendChild(slot);
-        });
-    }
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-    function createPieceElement(pieceData) {
-        const el = document.createElement('div');
-        el.className = 'piece'; el.dataset.id = pieceData.id; el.dataset.onBoard = "false";
-        el.style.gridTemplateColumns = `repeat(, 1fr)`;
-        el.style.gridTemplateRows = `repeat(, 1fr)`;
-        const miniCellSize = window.innerWidth < 600 ? 20 : 25; // Менші в доці на мобільних
-        el.style.width = `px`; el.style.height = `px`;
-        el.style.animation = `popIn 0.4s ease-out forwards`; el.style.animationDelay = `s`;
+function showSettings(){
+  document.getElementById('snd-toggle').classList.toggle('on',S.sound);
+  ['en','uk','ru'].forEach(l=>document.getElementById(`ol-${l}`)?.classList.toggle('active',l===S.lang));
+  ['default','white','black'].forEach(th=>document.getElementById(`ot-${th}`)?.classList.toggle('active',th===S.theme));
+  document.getElementById('modal-settings').querySelector('.modal-title').textContent=t('settings');
+  showModal('modal-settings');
+}
 
-        for (let r = 0; r < pieceData.rows; r++) {
-            for (let c = 0; c < pieceData.cols; c++) {
-                const block = document.createElement('div');
-                block.className = pieceData.matrix[r][c] === 1 ? `piece-block ` : 'empty-block';
-                el.appendChild(block);
-            }
-        }
-        el.addEventListener('pointerdown', handlePointerDown);
-        return el;
-    }
+/* ============================================================
+   КОНФЕТІ ТА ІНІЦІАЛІЗАЦІЯ
+============================================================ */
+function spawnConfetti(){
+  const box=document.getElementById('confetti-box');
+  box.innerHTML='';
+  const colors=['#FF6B8A','#F5C842','#4ECDC4','#A78BFA','#06D6A0','#74B9FF','#FFB347'];
+  for(let i=0;i<80;i++){
+    const p=document.createElement('div');
+    p.className='cf';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    const sz=6+Math.random()*10;
+    p.style.width=sz+'px'; p.style.height=sz+'px';
+    p.style.borderRadius=Math.random()>.5?'50%':'4px';
+    p.style.animationDuration=(1+Math.random()*2)+'s';
+    p.style.animationDelay=(Math.random()*.3)+'s';
+    box.appendChild(p);
+    p.addEventListener('animationend',()=>p.remove());
+  }
+}
 
-    function calculateCellSize() {
-        const boardEl = document.getElementById('board-container');
-        board.cellSize = (boardEl.getBoundingClientRect().width - 8) / board.size;
-    }
+window.addEventListener('resize',()=>{
+  if(!S.ld) return;
+  renderGrid();
+  renderPieces();
+  const{gridSize}=S.ld;
+  for(let r=0;r<gridSize;r++) for(let c=0;c<gridSize;c++) paintCell(r,c);
+});
 
-    function repositionPiecesOnBoard() {
-        document.querySelectorAll('.piece[data-on-board="true"]').forEach(el => {
-            const row = parseInt(el.dataset.boardRow), col = parseInt(el.dataset.boardCol);
-            const pieceData = currentPieces.find(p => p.id == el.dataset.id);
-            el.style.width = `px`; el.style.height = `px`;
-            el.style.left = `px`; el.style.top = `px`;
-        });
-        
-        // Оновлюємо розмір фігур в доці при ресайзі
-        document.querySelectorAll('.piece[data-on-board="false"]').forEach(el => {
-            const pieceData = currentPieces.find(p => p.id == el.dataset.id);
-            const miniCellSize = window.innerWidth < 600 ? 20 : 25;
-            el.style.width = `px`; el.style.height = `px`;
-        });
-    }
+function init(){
+  loadSettings();
+  setTheme(S.theme);
+  setLang(S.lang);
+  showScreen('screen-welcome');
 
-    function handlePointerDown(e) {
-        if (e.button !== 0 && e.type.includes('mouse')) return;
-        draggedPiece = e.currentTarget;
-        const pieceData = currentPieces.find(p => p.id == draggedPiece.dataset.id);
-        
-        if (draggedPiece.dataset.onBoard === "true") {
-            for(let r=0; r<pieceData.rows; r++) for(let c=0; c<pieceData.cols; c++) if(pieceData.matrix[r][c]===1) board.grid[parseInt(draggedPiece.dataset.boardRow)+r][parseInt(draggedPiece.dataset.boardCol)+c] = null;
-            draggedPiece.dataset.onBoard = "false"; placedPiecesCount--;
-        } else startDockSlot = draggedPiece.parentElement;
+  document.getElementById('nick-input').addEventListener('input',onNickInput);
+  document.getElementById('nick-input').addEventListener('keydown',e=>{
+    if(e.key==='Enter') handlePlay();
+  });
 
-        playSound('pickup'); calculateCellSize();
-        const rect = draggedPiece.getBoundingClientRect();
-        
-        // Масштабування до розміру поля
-        draggedPiece.style.width = `px`;
-        draggedPiece.style.height = `px`;
-        
-        dragOffsetX = e.clientX - rect.left; dragOffsetY = e.clientY - rect.top;
-        if (startDockSlot) {
-            dragOffsetX = (dragOffsetX / rect.width) * (pieceData.cols * board.cellSize);
-            dragOffsetY = (dragOffsetY / rect.height) * (pieceData.rows * board.cellSize);
-            
-            // Центрування на мобільних щоб палець не закривав фігуру
-            if(e.pointerType === 'touch') {
-                dragOffsetY += 40; 
-            }
-        }
+  document.querySelectorAll('.overlay').forEach(ov=>{
+    ov.addEventListener('click',e=>{if(e.target===ov) ov.classList.add('hidden');});
+  });
 
-        document.body.appendChild(draggedPiece);
-        draggedPiece.classList.add('dragging'); draggedPiece.style.position = 'absolute';
-        movePiece(e.clientX, e.clientY);
-        document.addEventListener('pointermove', handlePointerMove, {passive: false});
-        document.addEventListener('pointerup', handlePointerUp);
-    }
+  document.addEventListener('contextmenu',e=>e.preventDefault());
+}
 
-    function handlePointerMove(e) { if(!draggedPiece) return; e.preventDefault(); movePiece(e.clientX, e.clientY); }
-    function movePiece(x, y) { draggedPiece.style.left = `px`; draggedPiece.style.top = `px`; }
-
-    function handlePointerUp(e) {
-        if (!draggedPiece) return;
-        document.removeEventListener('pointermove', handlePointerMove); document.removeEventListener('pointerup', handlePointerUp);
-        draggedPiece.classList.remove('dragging');
-
-        const pieceData = currentPieces.find(p => p.id == draggedPiece.dataset.id);
-        const boardRect = document.getElementById('board-grid').getBoundingClientRect();
-        const pieceRect = draggedPiece.getBoundingClientRect();
-        
-        // Точка перевірки (центр першого блоку фігури)
-        const relX = pieceRect.left - boardRect.left + (board.cellSize / 2);
-        const relY = pieceRect.top - boardRect.top + (board.cellSize / 2);
-        const col = Math.floor(relX / board.cellSize), row = Math.floor(relY / board.cellSize);
-
-        let canPlace = true;
-        for (let r = 0; r < pieceData.rows; r++) {
-            for (let c = 0; c < pieceData.cols; c++) {
-                if (pieceData.matrix[r][c] === 1) {
-                    let br = row + r, bc = col + c;
-                    if (br < 0 || br >= board.size || bc < 0 || bc >= board.size || board.grid[br][bc] !== null) canPlace = false;
-                }
-            }
-        }
-
-        if (canPlace) {
-            for (let r = 0; r < pieceData.rows; r++) for (let c = 0; c < pieceData.cols; c++) if (pieceData.matrix[r][c] === 1) board.grid[row + r][col + c] = pieceData.id;
-            document.getElementById('board-grid').appendChild(draggedPiece);
-            draggedPiece.dataset.onBoard = "true"; draggedPiece.dataset.boardRow = row; draggedPiece.dataset.boardCol = col;
-            draggedPiece.style.position = 'absolute'; draggedPiece.style.left = `px`; draggedPiece.style.top = `px`; draggedPiece.style.margin = "0";
-            playSound('snap'); placedPiecesCount++;
-            
-            if (placedPiecesCount === currentPieces.length) {
-                setTimeout(() => {
-                    playSound('win'); document.getElementById('board-container').classList.add('win-anim');
-                    setTimeout(() => openModal('win-modal'), 800);
-                }, 200);
-            }
-        } else {
-            playSound('drop'); draggedPiece.dataset.onBoard = "false";
-            draggedPiece.style.position = 'relative'; draggedPiece.style.left = 'auto'; draggedPiece.style.top = 'auto';
-            const miniCellSize = window.innerWidth < 600 ? 20 : 25;
-            draggedPiece.style.width = `px`; draggedPiece.style.height = `px`;
-            if (startDockSlot) startDockSlot.appendChild(draggedPiece);
-            else {
-                let emptySlot = Array.from(document.querySelectorAll('.dock-slot')).find(s => s.children.length === 0);
-                if(emptySlot) emptySlot.appendChild(draggedPiece); else document.getElementById('dock-container').appendChild(draggedPiece);
-            }
-        }
-        draggedPiece = null;
-    }
-
-    function openModal(id) { document.getElementById(id).classList.add('active'); if(id === 'leaderboard-modal') generateLeaderboardUI(); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); document.getElementById('login-error').innerText = ''; }
-    function nextLevel() { closeModal('win-modal'); gameState.level++; startLevel(); }
-
-    window.onload = init;
+init();
 </script>
 </body>
+</html>
