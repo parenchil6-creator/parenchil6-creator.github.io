@@ -1,1309 +1,1012 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a0a0a">
-<title>SpineRehab — Реабілітація попереку</title>
-<style>
-Notification.requestPermission()
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
-:root{
-  --bg:#F2F2F7;--surface:rgba(255,255,255,.96);--card:#fff;--surface2:#EFEFF4;
-  --text:#1C1C1E;--text2:#636366;--text3:#AEAEB2;
-  --green:#34C759;--green2:#28A745;--gbg:rgba(52,199,89,.12);
-  --blue:#007AFF;--bbg:rgba(0,122,255,.10);
-  --orange:#FF9500;--obg:rgba(255,149,0,.12);
-  --red:#FF3B30;--rbg:rgba(255,59,48,.10);
-  --border:rgba(0,0,0,.07);--sh:0 2px 16px rgba(0,0,0,.07);
-  --nav:83px;--safe-t:env(safe-area-inset-top,44px);--safe-b:env(safe-area-inset-bottom,0px);
-  --r:16px;--rl:22px;
-}
-[data-theme=dark]{
-  --bg:#000;--surface:rgba(28,28,30,.97);--card:#1C1C1E;--surface2:#2C2C2E;
-  --text:#fff;--text2:#AEAEB2;--text3:#636366;
-  --green:#30D158;--green2:#26A846;--gbg:rgba(48,209,88,.14);
-  --blue:#0A84FF;--bbg:rgba(10,132,255,.14);
-  --orange:#FF9F0A;--obg:rgba(255,159,10,.14);
-  --red:#FF453A;--rbg:rgba(255,69,58,.14);
-  --border:rgba(255,255,255,.08);--sh:0 2px 20px rgba(0,0,0,.4);
-}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;overscroll-behavior:none;}
-#app{position:fixed;inset:0;overflow:hidden;background:var(--bg);}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brawl 2D</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;900&display=swap');
 
-/* SCREENS */
-.screen{position:absolute;inset:0;bottom:var(--nav);overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;overscroll-behavior:none;background:var(--bg);
-  visibility:hidden;opacity:0;transition:opacity .22s ease;}
-.screen.on{visibility:visible;opacity:1;}
-.sc-pad{padding:calc(var(--safe-t) + 14px) 16px 12px;display:flex;flex-direction:column;gap:14px;}
+        :root {
+            --primary: #FFCC00;
+            --btn-blue: linear-gradient(180deg, #33CCFF 0%, #0066FF 100%);
+            --btn-green: linear-gradient(180deg, #66FF33 0%, #009900 100%);
+            --btn-red: linear-gradient(180deg, #FF6666 0%, #CC0000 100%);
+            --btn-yellow: linear-gradient(180deg, #FFEB3B 0%, #F39C12 100%);
+        }
 
-/* BOTTOM NAV */
-.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;
-  background:var(--surface);border-top:1px solid var(--border);
-  backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
-  display:flex;height:var(--nav);padding-bottom:var(--safe-b);}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  padding-top:10px;gap:3px;cursor:pointer;}
-.ni:active{opacity:.6;}
-.ni-ico{font-size:23px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
-.ni-lbl{font-size:10px;font-weight:500;color:var(--text3);}
-.ni.on .ni-ico{transform:scale(1.18);}
-.ni.on .ni-lbl{color:var(--green);font-weight:700;}
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #111;
+            font-family: 'Nunito', sans-serif;
+            user-select: none; touch-action: none;
+        }
 
-/* CARDS */
-.card{background:var(--card);border-radius:var(--rl);padding:18px;
-  box-shadow:var(--sh);border:1px solid var(--border);}
-.card-s{background:var(--card);border-radius:var(--r);padding:14px;
-  box-shadow:var(--sh);border:1px solid var(--border);}
+        #gameCanvas {
+            display: block; width: 100%; height: 100%;
+        }
 
-/* BTNS */
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:none;
-  border-radius:14px;font-family:inherit;font-size:16px;font-weight:600;
-  cursor:pointer;transition:transform .1s,opacity .1s;padding:15px 24px;}
-.btn:active{transform:scale(.97);opacity:.85;}
-.btn-g{background:var(--green);color:#fff;}
-.btn-g2{background:var(--gbg);color:var(--green);}
-.btn-b{background:var(--blue);color:#fff;}
-.btn-n{background:var(--surface2);color:var(--text);}
-.btn-full{width:100%;padding:17px;border-radius:17px;font-size:17px;}
+        /* UI Containers */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle, rgba(20,20,40,0.8) 0%, rgba(0,0,0,0.95) 100%);
+            z-index: 10; transition: opacity 0.3s;
+        }
+        .hidden { display: none !important; }
 
-/* HOME */
-.h-top{display:flex;align-items:center;justify-content:space-between;}
-.h-sub{font-size:12px;color:var(--text3);font-weight:500;}
-.h-main{font-size:24px;font-weight:800;margin-top:2px;}
-.h-avatar{width:42px;height:42px;border-radius:50%;background:var(--gbg);
-  display:flex;align-items:center;justify-content:center;font-size:22px;}
-.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.stat{background:var(--card);border-radius:var(--r);padding:15px;
-  box-shadow:var(--sh);border:1px solid var(--border);}
-.stat-ico{font-size:22px;margin-bottom:4px;}
-.stat-v{font-size:30px;font-weight:800;line-height:1;}
-.stat-l{font-size:12px;color:var(--text2);font-weight:500;margin-top:2px;}
+        /* Typography */
+        h1.title {
+            font-family: 'Lilita One', cursive; font-size: 80px; color: var(--primary);
+            text-shadow: 0 8px 0 #CC5500, 0 12px 20px rgba(0,0,0,0.8);
+            margin-bottom: 10px; letter-spacing: 3px; text-transform: uppercase;
+        }
+        
+        .trophy-count {
+            font-size: 36px; color: white; font-weight: 900;
+            text-shadow: 2px 2px 0 #000; margin-bottom: 30px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .trophy-icon { color: #FFD700; font-size: 40px; text-shadow: 0 0 10px #FFD700; }
 
-/* SCALE */
-.scale{display:flex;gap:7px;}
-.sc-btn{flex:1;border-radius:12px;border:2px solid var(--border);background:var(--surface2);
-  font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;padding:10px 4px;
-  display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .18s;}
-.sc-btn span:first-child{font-size:20px;}
-.sc-btn.sel{border-color:var(--green);background:var(--gbg);color:var(--green);}
+        /* Char Selection */
+        .char-select {
+            display: flex; gap: 20px; margin-bottom: 30px;
+        }
+        .char-btn {
+            background: #222; border: 4px solid #444; border-radius: 15px; padding: 15px;
+            color: white; font-family: 'Lilita One'; font-size: 24px; cursor: pointer;
+            transition: 0.2s; text-transform: uppercase;
+        }
+        .char-btn.selected { border-color: #66FF33; box-shadow: 0 0 20px #66FF33; transform: scale(1.1); }
+        .char-btn:hover { border-color: #FFCC00; }
 
-/* WARNING */
-.warn{background:var(--obg);border:1px solid rgba(255,149,0,.22);border-radius:var(--r);
-  padding:13px;display:flex;align-items:flex-start;gap:10px;}
-.warn-ico{font-size:18px;flex-shrink:0;margin-top:1px;}
-.warn-t{font-size:13px;color:var(--text2);line-height:1.5;}
+        /* Buttons */
+        .btn {
+            border: 4px solid #111; border-radius: 15px; padding: 15px 40px;
+            font-size: 28px; font-weight: 900; color: white; text-transform: uppercase;
+            cursor: pointer; box-shadow: 0 8px 0 #111, 0 15px 20px rgba(0,0,0,0.5);
+            transition: transform 0.1s, box-shadow 0.1s; text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+            font-family: 'Lilita One', cursive; letter-spacing: 1px; margin: 10px;
+        }
+        .btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #111, 0 5px 10px rgba(0,0,0,0.5); }
+        .btn-play { background: var(--btn-yellow); border-color: #B9770E; box-shadow: 0 8px 0 #9C640C, 0 15px 20px rgba(0,0,0,0.5); }
+        .btn-box { background: var(--btn-blue); border-color: #0044AA; box-shadow: 0 8px 0 #003388, 0 15px 20px rgba(0,0,0,0.5); }
+        
+        /* Game HUD */
+        #hud {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 5;
+        }
+        .hud-top { display: flex; justify-content: space-between; padding: 20px; }
+        .brawlers-left {
+            background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 20px;
+            color: white; font-weight: bold; font-size: 24px; border: 3px solid #333;
+        }
+        .controls-hint {
+            position: absolute; bottom: 20px; right: 20px; text-align: right;
+            color: rgba(255,255,255,0.7); font-size: 18px; font-weight: bold;
+        }
+        .super-ready-text { color: #FFEB3B; font-size: 24px; text-shadow: 0 0 10px #FF9800; display: none; }
 
-/* SEC TITLE */
-.stitle{font-size:20px;font-weight:800;}
-.sec-hd{display:flex;align-items:center;justify-content:space-between;}
-.see-all{font-size:14px;color:var(--blue);font-weight:600;cursor:pointer;}
-
-/* EX LIST */
-.exl{display:flex;flex-direction:column;gap:9px;}
-.ex{background:var(--card);border-radius:var(--r);padding:14px 16px;
-  display:flex;align-items:center;gap:13px;box-shadow:var(--sh);
-  border:1px solid var(--border);cursor:pointer;transition:transform .12s,opacity .12s;}
-.ex:active{transform:scale(.98);opacity:.8;}
-.ex-th{width:50px;height:50px;border-radius:12px;background:var(--gbg);
-  display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
-.ex-inf{flex:1;}
-.ex-nm{font-size:15px;font-weight:700;}
-.ex-mt{font-size:12px;color:var(--text3);margin-top:2px;}
-.ex-tag{font-size:11px;font-weight:700;color:var(--green);background:var(--gbg);
-  padding:3px 8px;border-radius:6px;white-space:nowrap;}
-.ex-ar{color:var(--text3);font-size:18px;font-weight:300;}
-
-/* TAGS FILTER */
-.tags{display:flex;gap:7px;flex-wrap:wrap;}
-.tag{font-size:12px;padding:6px 12px;border-radius:9px;font-weight:600;cursor:pointer;
-  background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);transition:all .15s;}
-.tag.on{background:var(--gbg);color:var(--green);border-color:var(--green);}
-.tag:active{opacity:.7;}
-
-/* OVERLAY */
-.ov{position:fixed;inset:0;z-index:500;background:var(--bg);
-  display:none;flex-direction:column;overflow:hidden;}
-.ov.open{display:flex;animation:su .32s cubic-bezier(.32,.72,0,1);}
-@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.ov-hd{padding:calc(var(--safe-t) + 10px) 16px 12px;display:flex;align-items:center;
-  gap:12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);}
-.close-btn{width:34px;height:34px;border-radius:50%;background:var(--surface2);
-  border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:var(--text2);flex-shrink:0;}
-.close-btn:active{opacity:.6;}
-.ov-title{font-size:17px;font-weight:700;flex:1;}
-.ov-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:none;}
-
-/* SVG STAGE */
-.svg-stage{background:var(--surface2);display:flex;align-items:center;
-  justify-content:center;padding:20px 16px;min-height:180px;}
-.svg-stage svg{width:100%;max-width:280px;height:160px;}
-
-/* TIMER */
-.timer-sec{padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:14px;}
-.ring-wrap{position:relative;width:124px;height:124px;}
-.t-ring{transform:rotate(-90deg);}
-.t-bg{fill:none;stroke:var(--surface2);stroke-width:9;}
-.t-prog{fill:none;stroke:var(--green);stroke-width:9;stroke-linecap:round;
-  transition:stroke-dashoffset .9s linear;}
-.t-text{position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;}
-.t-num{font-size:34px;font-weight:800;line-height:1;}
-.t-lbl{font-size:11px;color:var(--text3);font-weight:500;margin-top:2px;}
-.t-ctrl{display:flex;gap:10px;width:100%;}
-.t-ctrl .btn{flex:1;padding:14px;}
-.sets-row{display:flex;gap:8px;justify-content:center;}
-.sd{width:10px;height:10px;border-radius:50%;background:var(--border);
-  border:2px solid var(--text3);transition:all .25s;}
-.sd.done{background:var(--green);border-color:var(--green);}
-.sd.cur{background:transparent;border-color:var(--green);transform:scale(1.4);}
-
-/* INSTRUCTIONS */
-.instr-sec{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px;}
-.instr-blk{background:var(--card);border-radius:var(--r);padding:14px;border:1px solid var(--border);}
-.instr-t{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:9px;}
-.instr-l{display:flex;flex-direction:column;gap:7px;}
-.ii{display:flex;align-items:flex-start;gap:8px;font-size:14px;line-height:1.45;}
-.dot{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0;}
-.do .dot{background:var(--green);}
-.dont .dot{background:var(--red);}
-
-/* WORKOUT OVERLAY */
-.wov{position:fixed;inset:0;z-index:600;background:var(--bg);
-  display:none;flex-direction:column;overflow:hidden;}
-.wov.open{display:flex;}
-.w-hd{padding:calc(var(--safe-t) + 10px) 16px 10px;background:var(--surface);
-  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.w-prog-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:8px;overflow:hidden;}
-.w-prog-fill{height:100%;background:var(--green);border-radius:2px;transition:width .5s ease;}
-.w-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:none;}
-
-/* REST */
-.rest{position:fixed;inset:0;z-index:650;background:var(--bg);
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-.rest.open{display:flex;}
-.rest-ico{font-size:60px;}
-.rest-t{font-size:24px;font-weight:800;}
-.rest-timer{font-size:56px;font-weight:900;color:var(--blue);line-height:1;}
-.rest-sub{font-size:15px;color:var(--text2);text-align:center;line-height:1.5;padding:0 32px;}
-
-/* SUCCESS */
-.succ{position:fixed;inset:0;z-index:700;background:var(--bg);
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  gap:16px;padding:28px;}
-.succ.open{display:flex;}
-.succ-ico{font-size:80px;animation:bi .5s cubic-bezier(.34,1.56,.64,1);}
-@keyframes bi{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-.succ-t{font-size:28px;font-weight:900;text-align:center;}
-.succ-s{font-size:15px;color:var(--text2);text-align:center;line-height:1.5;}
-.succ-stats{display:flex;gap:16px;background:var(--card);border-radius:var(--r);
-  padding:16px 20px;border:1px solid var(--border);}
-.ss{text-align:center;}
-.ss-v{font-size:24px;font-weight:800;}
-.ss-l{font-size:11px;color:var(--text3);margin-top:2px;}
-
-/* PROGRESS */
-.prog-hd{background:var(--card);border-radius:var(--rl);padding:20px;
-  box-shadow:var(--sh);border:1px solid var(--border);}
-.prog-row{display:flex;gap:0;}
-.prog-stat{flex:1;text-align:center;padding:0 10px;}
-.prog-stat+.prog-stat{border-left:1px solid var(--border);}
-.ps-v{font-size:32px;font-weight:900;line-height:1;}
-.ps-l{font-size:11px;color:var(--text3);margin-top:4px;font-weight:500;}
-
-/* CALENDAR */
-.cal-card{background:var(--card);border-radius:var(--rl);padding:16px;
-  box-shadow:var(--sh);border:1px solid var(--border);}
-.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.cal-t{font-size:17px;font-weight:700;}
-.cal-nav{width:32px;height:32px;border-radius:9px;background:var(--surface2);
-  border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);}
-.cal-nav:active{opacity:.6;}
-.cal-dh{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px;}
-.cdn{text-align:center;font-size:10px;font-weight:700;color:var(--text3);padding:4px 0;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cc{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:500;color:var(--text3);}
-.cc.done{background:var(--gbg);color:var(--green);font-weight:800;}
-.cc.today{border:2px solid var(--green);color:var(--text);font-weight:800;}
-.cc.today.done{background:var(--green);color:#fff;border-color:var(--green);}
-.cc.empty{visibility:hidden;}
-
-/* LEVEL */
-.lv-card{background:var(--card);border-radius:var(--rl);padding:18px;
-  box-shadow:var(--sh);border:1px solid var(--border);}
-.lv-bar-w{background:var(--surface2);border-radius:999px;height:10px;overflow:hidden;margin:10px 0;}
-.lv-bar{height:100%;background:linear-gradient(90deg,var(--green),#00C896);
-  border-radius:999px;transition:width .8s cubic-bezier(.34,1.56,.64,1);}
-.lv-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);padding:3px 0;}
-
-/* SETTINGS */
-.set-g{background:var(--card);border-radius:var(--rl);overflow:hidden;
-  box-shadow:var(--sh);border:1px solid var(--border);}
-.set-i{display:flex;align-items:center;gap:12px;padding:14px 16px;
-  border-bottom:1px solid var(--border);cursor:pointer;}
-.set-i:last-child{border-bottom:none;}
-.set-i:active{background:var(--surface2);}
-.set-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
-  justify-content:center;font-size:17px;flex-shrink:0;}
-.set-l{font-size:15px;flex:1;}
-.set-v{font-size:14px;color:var(--text3);}
-.set-sec-l{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;
-  letter-spacing:.05em;margin-bottom:5px;padding-left:4px;}
-
-/* TOGGLE */
-.tgl{width:51px;height:31px;border-radius:999px;background:var(--text3);
-  position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none;}
-.tgl.on{background:var(--green);}
-.tgl::after{content:'';position:absolute;width:27px;height:27px;border-radius:50%;
-  background:#fff;top:2px;left:2px;transition:transform .2s cubic-bezier(.34,1.56,.64,1);
-  box-shadow:0 2px 5px rgba(0,0,0,.2);}
-.tgl.on::after{transform:translateX(20px);}
-.time-in{background:var(--surface2);border:none;border-radius:8px;padding:6px 10px;
-  font-size:14px;font-weight:700;color:var(--text);font-family:inherit;
-  width:82px;text-align:center;cursor:pointer;}
-
-/* ANIMATIONS */
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
-@keyframes ptilt{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-@keyframes kpull{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-38deg)}}
-@keyframes dbarm{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-18px,-16px) rotate(-28deg)}}
-@keyframes dbleg{0%,100%{transform:rotate(0)}50%{transform:rotate(-32deg) translateY(-4px)}}
-@keyframes march1{0%,100%{transform:rotate(0)}50%{transform:rotate(-26deg)}}
-@keyframes march2{0%,100%{transform:rotate(-26deg)}50%{transform:rotate(0)}}
-@keyframes glt{0%,100%{transform:rotate(0)}50%{transform:rotate(22deg)}}
-@keyframes arw{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(3px)}}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-.an-b{animation:breathe 4s ease-in-out infinite;transform-origin:center;}
-.an-p{animation:ptilt 3.2s ease-in-out infinite;}
-.an-k{animation:kpull 3s ease-in-out infinite;transform-origin:120px 70px;}
-.an-da{animation:dbarm 3s ease-in-out infinite;transform-origin:85px 103px;}
-.an-dl{animation:dbleg 3s ease-in-out infinite;transform-origin:75px 112px;}
-.an-m1{animation:march1 .9s ease-in-out infinite;transform-origin:100px 110px;}
-.an-m2{animation:march2 .9s ease-in-out infinite;transform-origin:100px 110px;}
-.an-g{animation:glt 3s ease-in-out infinite;transform-origin:107px 97px;}
-.an-aw{animation:arw 2s ease-in-out infinite;}
-.fade-in{animation:fade .3s ease both;}
-
-::-webkit-scrollbar{display:none;}
-</style>
+        /* End Screen */
+        .end-card {
+            background: #222; border: 5px solid #444; border-radius: 20px;
+            padding: 40px; text-align: center; color: white; min-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .end-place { font-size: 60px; font-family: 'Lilita One'; margin-bottom: 10px; }
+        .end-trophies { font-size: 40px; font-weight: bold; margin-bottom: 30px; }
+        .win-text { color: #66FF33; text-shadow: 0 4px 0 #009900; }
+        .lose-text { color: #FF6666; text-shadow: 0 4px 0 #CC0000; }
+    </style>
 </head>
 <body>
-<div id="app">
 
-<!-- ══════ HOME ══════ -->
-<div class="screen on" id="s-home">
-<div class="sc-pad">
-  <div class="h-top">
-    <div>
-      <div class="h-sub" id="h-date"></div>
-      <div class="h-main" id="h-greet">Доброго ранку! ☀️</div>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Внутрішньоігровий інтерфейс -->
+    <div id="hud" class="hidden">
+        <div class="hud-top">
+            <div class="brawlers-left" id="aliveCount">Бійців: 10</div>
+        </div>
+        <div class="controls-hint">
+            <div id="superHint" class="super-ready-text">УЛЬТА ГОТОВА! (ПКМ або Пробіл)</div>
+            <div>ЛКМ - Атака</div>
+        </div>
     </div>
-    <div class="h-avatar">🌿</div>
-  </div>
 
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-ico">🔥</div>
-      <div class="stat-v" id="h-streak">0</div>
-      <div class="stat-l">Серія днів</div>
+    <!-- Головне Меню -->
+    <div id="mainMenu" class="overlay">
+        <h1 class="title">BRAWL 2D</h1>
+        <div class="trophy-count"><span class="trophy-icon">🏆</span> <span id="menuTrophies">0</span></div>
+        
+        <div class="char-select">
+            <button class="char-btn selected" data-char="Шеллі">Шеллі<br><span style="font-size:12px">Дробовик</span></button>
+            <button class="char-btn" data-char="Кольт">Кольт<br><span style="font-size:12px">Далекобійник</span></button>
+            <button class="char-btn" data-char="Булл">Булл<br><span style="font-size:12px">Танк</span></button>
+        </div>
+
+        <button class="btn btn-play" id="startBtn">ГРАТИ (Зіткнення)</button>
     </div>
-    <div class="stat">
-      <div class="stat-ico">✅</div>
-      <div class="stat-v" id="h-total">0</div>
-      <div class="stat-l">Всього тренувань</div>
+
+    <!-- Екран завершення -->
+    <div id="endScreen" class="overlay hidden">
+        <div class="end-card">
+            <div id="endPlace" class="end-place">Місце: 1</div>
+            <div id="endTrophies" class="end-trophies">+10 🏆</div>
+            <button class="btn btn-play" id="backToMenuBtn" style="width: 100%; box-sizing: border-box;">У МЕНЮ</button>
+        </div>
     </div>
-  </div>
-
-  <div class="card">
-    <div style="font-size:16px;font-weight:700;margin-bottom:12px;">Як твоя спина сьогодні?</div>
-    <div class="scale">
-      <div class="sc-btn" data-v="1" onclick="setStatus(1)"><span>😊</span>Відм.</div>
-      <div class="sc-btn" data-v="2" onclick="setStatus(2)"><span>🙂</span>Добре</div>
-      <div class="sc-btn" data-v="3" onclick="setStatus(3)"><span>😐</span>Норм</div>
-      <div class="sc-btn" data-v="4" onclick="setStatus(4)"><span>😕</span>Важко</div>
-      <div class="sc-btn" data-v="5" onclick="setStatus(5)"><span>😣</span>Біль</div>
-    </div>
-    <div id="h-rec" style="display:none;margin-top:12px;font-size:14px;line-height:1.5;
-      padding:11px 13px;border-radius:11px;"></div>
-  </div>
-
-  <button class="btn btn-g btn-full" onclick="startWorkout()">▶&nbsp; Почати тренування</button>
-
-  <div class="warn">
-    <div class="warn-ico">⚠️</div>
-    <div class="warn-t"><strong>Безпека!</strong> Якщо з'являється біль — негайно зупини вправу. Це підтримуюча програма, не медичне лікування.</div>
-  </div>
-
-  <div class="sec-hd">
-    <div class="stitle">Сьогодні</div>
-    <div class="see-all" onclick="navigate('exercises')">Всі →</div>
-  </div>
-  <div class="exl" id="h-exl"></div>
-  <div style="height:4px;"></div>
-</div>
-</div>
-
-<!-- ══════ EXERCISES ══════ -->
-<div class="screen" id="s-exercises">
-<div class="sc-pad">
-  <div class="stitle">Вправи</div>
-  <div class="tags" id="ex-tags">
-    <div class="tag on" onclick="flt('all',this)">Всі 8</div>
-    <div class="tag" onclick="flt('breath',this)">🫁 Дихання</div>
-    <div class="tag" onclick="flt('pelvis',this)">🔄 Таз</div>
-    <div class="tag" onclick="flt('core',this)">💪 Кор</div>
-    <div class="tag" onclick="flt('stretch',this)">🧘 Розтяжка</div>
-  </div>
-  <div class="exl" id="ex-list"></div>
-  <div class="warn" style="background:rgba(0,122,255,.08);border-color:rgba(0,122,255,.18);">
-    <div class="warn-ico">🛡️</div>
-    <div class="warn-t" style="color:var(--blue);">Всі вправи безпечні при протрузіях L3-L4, L4-L5 та грижі Шморля L5. Виконуй повільно, без ривків.</div>
-  </div>
-  <div style="height:4px;"></div>
-</div>
-</div>
-
-<!-- ══════ PROGRESS ══════ -->
-<div class="screen" id="s-progress">
-<div class="sc-pad">
-  <div class="stitle">Прогрес</div>
-
-  <div class="prog-hd">
-    <div class="prog-row">
-      <div class="prog-stat"><div class="ps-v" id="p-str">0</div><div class="ps-l">🔥 Серія</div></div>
-      <div class="prog-stat"><div class="ps-v" id="p-tot">0</div><div class="ps-l">✅ Всього</div></div>
-      <div class="prog-stat"><div class="ps-v" id="p-mon">0</div><div class="ps-l">📅 Місяць</div></div>
-    </div>
-    <div style="font-size:13px;color:var(--text3);text-align:center;margin-top:12px;">
-      Ціль: стабільність і зменшення напруги 🌿
-    </div>
-  </div>
-
-  <div class="lv-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:16px;font-weight:700;">Рівні програми</div>
-      <div style="font-size:13px;color:var(--text3);" id="lv-days">0 / 30 дн.</div>
-    </div>
-    <div class="lv-bar-w"><div class="lv-bar" id="lv-bar" style="width:0%"></div></div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;">🟢 Рівень 1 — Початок · Легкі реабілітаційні вправи</div>
-    <div class="lv-item"><span style="color:var(--green);font-weight:700;">✓</span> Рівень 1: Початок (30 днів)</div>
-    <div class="lv-item"><span style="color:var(--text3);">○</span> Рівень 2: Розвиток (30 днів)</div>
-    <div class="lv-item"><span style="color:var(--text3);">○</span> Рівень 3: Стабільність (30 днів)</div>
-    <div class="lv-item"><span style="color:var(--text3);">○</span> Рівень 4: Витривалість (30 днів)</div>
-    <div class="lv-item"><span style="color:var(--text3);">○</span> Рівень 5: Підтримка (30 днів)</div>
-    <div class="lv-item"><span style="color:var(--text3);">○</span> Рівень 6: Майстерність (∞)</div>
-  </div>
-
-  <div class="cal-card">
-    <div class="cal-hd">
-      <button class="cal-nav" onclick="calPrev()">‹</button>
-      <div class="cal-t" id="cal-t"></div>
-      <button class="cal-nav" onclick="calNext()">›</button>
-    </div>
-    <div class="cal-dh">
-      <div class="cdn">Пн</div><div class="cdn">Вт</div><div class="cdn">Ср</div>
-      <div class="cdn">Чт</div><div class="cdn">Пт</div><div class="cdn">Сб</div><div class="cdn">Нд</div>
-    </div>
-    <div class="cal-grid" id="cal-g"></div>
-  </div>
-  <div style="height:4px;"></div>
-</div>
-</div>
-
-<!-- ══════ SETTINGS ══════ -->
-<div class="screen" id="s-settings">
-<div class="sc-pad">
-  <div class="stitle">Налаштування</div>
-
-  <div class="set-sec-l">Вигляд</div>
-  <div class="set-g">
-    <div class="set-i" onclick="cycleTheme()">
-      <div class="set-ico" style="background:var(--surface2);">🎨</div>
-      <div class="set-l">Тема</div>
-      <div class="set-v" id="th-v">Авто</div>
-    </div>
-  </div>
-
-  <div class="set-sec-l" style="margin-top:10px;">Тренування</div>
-  <div class="set-g">
-    <div class="set-i">
-      <div class="set-ico" style="background:var(--gbg);">🟢</div>
-      <div class="set-l">Рівень</div>
-      <div class="set-v">Легкий</div>
-    </div>
-    <div class="set-i" onclick="togSound()">
-      <div class="set-ico" style="background:var(--bbg);">🔊</div>
-      <div class="set-l">Звук</div>
-      <button class="tgl" id="snd-tgl"></button>
-    </div>
-  </div>
-
-  <div class="set-sec-l" style="margin-top:10px;">Нагадування</div>
-  <div class="set-g">
-    <div class="set-i" onclick="togNotif()">
-      <div class="set-ico" style="background:var(--obg);">🔔</div>
-      <div class="set-l">Нагадування</div>
-      <button class="tgl" id="ntf-tgl"></button>
-    </div>
-    <div class="set-i">
-      <div class="set-ico" style="background:var(--obg);">☀️</div>
-      <div class="set-l">Ранок</div>
-      <input type="time" class="time-in" id="t-mor" value="09:00" onchange="saveNtf()">
-    </div>
-    <div class="set-i">
-      <div class="set-ico" style="background:var(--obg);">🌙</div>
-      <div class="set-l">Вечір</div>
-      <input type="time" class="time-in" id="t-eve" value="19:00" onchange="saveNtf()">
-    </div>
-  </div>
-
-  <div class="set-sec-l" style="margin-top:10px;">Дані</div>
-  <div class="set-g">
-    <div class="set-i" onclick="resetAll()">
-      <div class="set-ico" style="background:var(--rbg);">🗑️</div>
-      <div class="set-l" style="color:var(--red);">Скинути прогрес</div>
-    </div>
-  </div>
-
-  <div class="card-s" style="background:var(--rbg);border-color:rgba(255,59,48,.18);">
-    <div style="font-size:13px;color:var(--red);line-height:1.5;">
-      <strong>⚠️ Медична застереження:</strong><br>
-      Ця програма є додатковою підтримкою і не замінює лікування. При загостренні болю зверніться до лікаря.
-    </div>
-  </div>
-  <div style="height:4px;"></div>
-</div>
-</div>
-
-<!-- BOTTOM NAV -->
-<nav class="bnav">
-  <div class="ni on" id="n-home" onclick="navigate('home')">
-    <div class="ni-ico">🏠</div><div class="ni-lbl">Головна</div>
-  </div>
-  <div class="ni" id="n-exercises" onclick="navigate('exercises')">
-    <div class="ni-ico">🏋️</div><div class="ni-lbl">Вправи</div>
-  </div>
-  <div class="ni" id="n-progress" onclick="navigate('progress')">
-    <div class="ni-ico">📅</div><div class="ni-lbl">Прогрес</div>
-  </div>
-  <div class="ni" id="n-settings" onclick="navigate('settings')">
-    <div class="ni-ico">⚙️</div><div class="ni-lbl">Налаштування</div>
-  </div>
-</nav>
-
-<!-- EXERCISE DETAIL OVERLAY -->
-<div class="ov" id="ex-ov">
-  <div class="ov-hd">
-    <button class="close-btn" onclick="closeOv()">✕</button>
-    <div class="ov-title" id="ov-t">Вправа</div>
-    <div class="ex-tag" id="ov-tg">Легка</div>
-  </div>
-  <div class="ov-body" id="ov-b"></div>
-</div>
-
-<!-- WORKOUT OVERLAY -->
-<div class="wov" id="wov">
-  <div class="w-hd">
-    <button class="close-btn" onclick="closeW()">✕</button>
-    <div style="flex:1;">
-      <div style="font-size:12px;color:var(--text3);font-weight:500;" id="w-lbl">Вправа 1 з 8</div>
-      <div style="font-size:16px;font-weight:700;margin-top:1px;" id="w-nm"></div>
-      <div class="w-prog-bar"><div class="w-prog-fill" id="w-pf" style="width:0%"></div></div>
-    </div>
-  </div>
-  <div class="w-body" id="w-bd"></div>
-</div>
-
-<!-- REST OVERLAY -->
-<div class="rest" id="rest">
-  <div class="rest-ico">😮‍💨</div>
-  <div class="rest-t">Відпочинок</div>
-  <div class="rest-timer" id="r-tm">15</div>
-  <div class="rest-sub">Розслабся, подихай глибоко.<br>Наступна вправа почнеться автоматично.</div>
-  <button class="btn btn-g2" onclick="skipRest()" style="padding:14px 32px;border-radius:14px;color:#fff;">Пропустити →</button>
-</div>
-
-<!-- SUCCESS OVERLAY -->
-<div class="succ" id="succ">
-  <div class="succ-ico">🎉</div>
-  <div class="succ-t">Чудово! Ти молодець!</div>
-  <div class="succ-s" id="succ-s">Тренування завершено!</div>
-  <div class="succ-stats">
-    <div class="ss"><div class="ss-v" id="ss-t">—</div><div class="ss-l">хвилин</div></div>
-    <div class="ss"><div class="ss-v" id="ss-e">8</div><div class="ss-l">вправ</div></div>
-    <div class="ss"><div class="ss-v" id="ss-s">—</div><div class="ss-l">🔥 серія</div></div>
-  </div>
-  <button class="btn btn-g btn-full" onclick="closeSucc()">Готово ✓</button>
-  <div style="font-size:13px;color:var(--text3);text-align:center;">Відпочинь і продовжуй у своєму темпі 🌿</div>
-</div>
-
-</div><!-- /#app -->
 
 <script>
-// ════════════════════════════
-// DATA
-// ════════════════════════════
-const EX = [
-  {
-    id:'breath', name:'Діафрагмальне дихання', emoji:'🫁', cat:'breath', catL:'Дихання',
-    dur:40, sets:2, rest:20, diff:'Легка',
-    desc:'Основа релаксації та активації глибоких м\'язів кора. Вчить правильному диханню животом.',
-    svg:'breath',
-    do:['Ляж на спину, коліна зігнуті, стопи на підлозі','Поклади руку на живіт — вона має підніматись на вдиху','Вдихай носом 4 сек — живіт піднімається','Видихай ротом 6 сек — живіт опускається','Груди залишаються майже нерухомими'],
-    dont:['Не напружуй плечі та шию','Не дихай тільки грудьми','Не затримуй дихання'],
-  },
-  {
-    id:'pelvic', name:'Тазові нахили', emoji:'🔄', cat:'pelvis', catL:'Таз',
-    dur:30, sets:3, rest:15, diff:'Легка',
-    desc:'Активує глибокі стабілізатори попереку, зменшує надмірний прогин (лордоз).',
-    svg:'pelvic',
-    do:['Ляж на спину, коліна зігнуті','Напруж живіт та притисни поперек до підлоги','Утримуй 5 секунд — не зупиняй дихання','Розслабся повністю','Повтори 10–12 разів'],
-    dont:['Не піднімай таз вгору (це не міст!)','Не затримуй дихання','Не напружуй плечі'],
-  },
-  {
-    id:'catcow', name:'Кішка-Корова (м\'яко)', emoji:'🐈', cat:'pelvis', catL:'Мобільність',
-    dur:35, sets:2, rest:20, diff:'Легка',
-    desc:'М\'який та повільний рух для мобільності хребта. Тільки комфортна амплітуда!',
-    svg:'catcow',
-    do:['Стань на четвереньки (руки під плечима, коліна під тазом)','Видихаючи — плавно округли спину вгору (кішка)','Вдихаючи — повільно прогни спину вниз (корова)','Рух дуже повільний, мінімальна амплітуда','Відчувай, не форсуй'],
-    dont:['Ніяких різких рухів!','Не прогинайся до болю або дискомфорту','Не скручуй хребет вбік'],
-  },
-  {
-    id:'knee', name:'Підтягування коліна до грудей', emoji:'🦵', cat:'stretch', catL:'Розтяжка',
-    dur:35, sets:2, rest:15, diff:'Легка',
-    desc:'М\'яко розтягує м\'язи попереку та сідниць, знімає компресію з міжхребцевих дисків.',
-    svg:'knee',
-    do:['Ляж на спину, коліна зігнуті','Повільно підтягни одне коліно до грудей руками','Утримуй 20–30 секунд, дихай рівно','Відпусти і повтори для іншої ноги','Рух плавний, без ривків'],
-    dont:['Не тягни з силою — тільки легкий тиск','Не піднімай голову від підлоги','Не підтягуй обидва коліна водночас'],
-  },
-  {
-    id:'relax', name:'Розслаблення попереку', emoji:'😌', cat:'stretch', catL:'Розслаблення',
-    dur:45, sets:2, rest:10, diff:'Легка',
-    desc:'Найбільш розслаблювальна поза — знімає напругу з усього поперекового відділу.',
-    svg:'relax',
-    do:['Ляж на спину і підтягни обидва коліна до грудей','Обхопи коліна руками обережно','Дуже м\'яко похитуйся вліво-вправо','Дихай глибоко — з кожним видихом відпускай напругу','Утримуй 30–45 секунд'],
-    dont:['Не стискай коліна з силою','Не рухайся різко','Не піднімай голову швидко'],
-  },
-  {
-    id:'deadbug', name:'Dead Bug (легкий варіант)', emoji:'🐛', cat:'core', catL:'Кор',
-    dur:30, sets:2, rest:20, diff:'Легка',
-    desc:'Зміцнює глибокі м\'язи кора без жодного навантаження на хребет.',
-    svg:'deadbug',
-    do:['Ляж на спину, руки вертикально вгору, коліна під 90°','Притисни поперек до підлоги — тримай ВЕСЬ час','Повільно опусти одну руку вперед + протилежну ногу вниз','Поверни до початку, повтори для іншої сторони','3–4 секунди на кожен рух'],
-    dont:['НЕ відривай поперек від підлоги!','Не затримуй дихання','Зменш амплітуду якщо важко — це нормально'],
-  },
-  {
-    id:'glute', name:'Розтяжка сідниць лежачи', emoji:'🍑', cat:'stretch', catL:'Розтяжка',
-    dur:40, sets:2, rest:15, diff:'Легка',
-    desc:'Знімає напругу з грушоподібного м\'яза та сідниць — частої причини болю в попереку.',
-    svg:'glute',
-    do:['Ляж на спину, коліна зігнуті','Поклади праву щиколотку на ліве коліно (фігура 4)','Підтягни ліве коліно до грудей — відчуй розтяжку в сідниці','Утримуй 30 секунд, дихай рівно','Повтори для іншої ноги'],
-    dont:['Не форсуй через біль','Не закидай ногу занадто різко','Не скручуй таз вбік'],
-  },
-  {
-    id:'march', name:'Ходьба на місці', emoji:'🚶', cat:'core', catL:'Кровообіг',
-    dur:60, sets:2, rest:15, diff:'Легка',
-    desc:'Покращує кровообіг, активує м\'язи без осьового навантаження на хребет.',
-    svg:'march',
-    do:['Стань прямо, тримайся за стіл або стілець','Повільно піднімай коліна по черзі (марш)','Тримай спину прямо, не нахиляйся','Рух повільний і плавний — не швидкий','Дихай рівномірно'],
-    dont:['Не піднімай коліна занадто високо','Не нахиляйся вперед','Жодних стрибків!'],
-  },
-];
+// ==========================================
+// НАЛАШТУВАННЯ
+// ==========================================
+let trophies = parseInt(localStorage.getItem('brawl_trophies')) || 0;
+document.getElementById('menuTrophies').innerText = trophies;
+let selectedBrawler = 'Шеллі';
 
-// ════════════════════════════
-// SVG ANIMATIONS
-// ════════════════════════════
-function getSvg(t) {
-  const C = 'var(--text2)';
-  const G = 'var(--green)';
-  const B = 'var(--border)';
-  const T3 = 'var(--text3)';
-  const s = {
-    breath:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
-      <line x1="15" y1="130" x2="205" y2="130" stroke="${B}" stroke-width="2.5"/>
-      <!-- body lying -->
-      <rect x="50" y="115" width="130" height="12" rx="6" fill="${C}" opacity=".35"/>
-      <!-- head -->
-      <circle cx="190" cy="112" r="14" fill="${C}" opacity=".65"/>
-      <!-- torso -->
-      <rect x="75" y="102" width="100" height="16" rx="7" fill="${C}" opacity=".5"/>
-      <!-- belly animated -->
-      <ellipse class="an-b" cx="115" cy="96" rx="22" ry="9" fill="${G}" opacity=".75"/>
-      <!-- arms -->
-      <line x1="88" y1="107" x2="68" y2="96" stroke="${C}" stroke-width="7" stroke-linecap="round" opacity=".55"/>
-      <line x1="145" y1="107" x2="160" y2="96" stroke="${C}" stroke-width="7" stroke-linecap="round" opacity=".55"/>
-      <!-- legs bent -->
-      <path d="M72 118 L55 132 L40 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".55"/>
-      <path d="M90 118 L77 132 L62 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".55"/>
-      <!-- label -->
-      <text x="115" y="76" text-anchor="middle" font-size="16" class="an-aw">↕</text>
-      <text x="115" y="64" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Живіт піднімається</text>
-      <text x="115" y="48" text-anchor="middle" font-size="10" fill="${T3}">вдих 4 сек · видих 6 сек</text>
-    </svg>`,
+// Вибір персонажа
+document.querySelectorAll('.char-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        selectedBrawler = e.currentTarget.getAttribute('data-char');
+    });
+});
 
-    pelvic:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
-      <line x1="15" y1="130" x2="205" y2="130" stroke="${B}" stroke-width="2.5"/>
-      <circle cx="192" cy="110" r="14" fill="${C}" opacity=".65"/>
-      <g class="an-p">
-        <rect x="75" y="100" width="100" height="16" rx="7" fill="${C}" opacity=".5"/>
-        <ellipse cx="110" cy="118" rx="28" ry="9" fill="${G}" opacity=".7"/>
-      </g>
-      <path d="M72 118 L55 132 L40 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".55"/>
-      <path d="M90 118 L77 132 L62 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".55"/>
-      <text x="108" y="76" text-anchor="middle" font-size="14" class="an-aw">↑↓</text>
-      <text x="108" y="64" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Поперек до підлоги</text>
-      <text x="108" y="49" text-anchor="middle" font-size="10" fill="${T3}">Утримуй 5 сек</text>
-    </svg>`,
-
-    catcow:`<svg viewBox="0 0 220 170" xmlns="http://www.w3.org/2000/svg">
-      <!-- 4-point stance -->
-      <line x1="55" y1="96" x2="40" y2="130" stroke="${C}" stroke-width="8" stroke-linecap="round" opacity=".55"/>
-      <line x1="155" y1="96" x2="170" y2="130" stroke="${C}" stroke-width="8" stroke-linecap="round" opacity=".55"/>
-      <line x1="68" y1="116" x2="52" y2="148" stroke="${C}" stroke-width="8" stroke-linecap="round" opacity=".55"/>
-      <line x1="142" y1="116" x2="158" y2="148" stroke="${C}" stroke-width="8" stroke-linecap="round" opacity=".55"/>
-      <!-- spine animated via SMIL -->
-      <path stroke="${G}" stroke-width="9" stroke-linecap="round" fill="none" opacity=".85">
-        <animate attributeName="d" values="M55 96 Q105 80 155 96;M55 96 Q105 112 155 96;M55 96 Q105 80 155 96"
-          dur="3.5s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1"/>
-      </path>
-      <!-- head -->
-      <circle cy="88" r="13" fill="${C}" opacity=".65">
-        <animate attributeName="cx" values="168;163;168" dur="3.5s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1"/>
-        <animate attributeName="cy" values="88;95;88" dur="3.5s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .6 1;.4 0 .6 1"/>
-      </circle>
-      <text x="110" y="40" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Кішка ↑</text>
-      <text x="110" y="54" text-anchor="middle" font-size="11" fill="${T3}" font-weight="600">Корова ↓</text>
-      <text x="110" y="162" text-anchor="middle" font-size="10" fill="${T3}">Дуже повільно!</text>
-    </svg>`,
-
-    knee:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
-      <line x1="15" y1="130" x2="205" y2="130" stroke="${B}" stroke-width="2.5"/>
-      <rect x="75" y="100" width="100" height="16" rx="7" fill="${C}" opacity=".5"/>
-      <circle cx="190" cy="108" r="14" fill="${C}" opacity=".65"/>
-      <!-- static leg -->
-      <path d="M90 115 L77 132 L62 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".5"/>
-      <!-- animated knee pull -->
-      <g class="an-k">
-        <path d="M72 113 L58 97 L70 85" stroke="${G}" stroke-width="8" stroke-linecap="round" fill="none" opacity=".85"/>
-        <circle cx="62" cy="87" r="7" fill="${G}" opacity=".55"/>
-      </g>
-      <text x="60" y="58" text-anchor="middle" font-size="14" class="an-aw">↗</text>
-      <text x="60" y="45" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Коліно до грудей</text>
-      <text x="60" y="32" text-anchor="middle" font-size="10" fill="${T3}">Утримуй 20–30 сек</text>
-    </svg>`,
-
-    relax:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
-      <line x1="15" y1="138" x2="205" y2="138" stroke="${B}" stroke-width="2.5"/>
-      <g>
-        <path d="M85 104 Q115 90 152 96" stroke="${C}" stroke-width="11" stroke-linecap="round" fill="none" opacity=".55"/>
-        <circle cx="164" cy="94" r="14" fill="${C}" opacity=".65"/>
-        <!-- both knees pulled -->
-        <path d="M85 110 Q75 122 66 118 Q60 110 70 104" stroke="${G}" stroke-width="8.5" stroke-linecap="round" fill="none" opacity=".8"/>
-        <path d="M88 114 Q76 128 65 125 Q57 117 68 110" stroke="${G}" stroke-width="8.5" stroke-linecap="round" fill="none" opacity=".65"/>
-        <!-- arms hugging -->
-        <path d="M105 100 Q85 112 68 110" stroke="${C}" stroke-width="6" stroke-linecap="round" fill="none" opacity=".5"/>
-      </g>
-      <text x="150" y="50" text-anchor="middle" font-size="22">😌</text>
-      <text x="150" y="68" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Обніми коліна</text>
-      <text x="150" y="82" text-anchor="middle" font-size="10" fill="${T3}">М'яко хитайся</text>
-    </svg>`,
-
-    deadbug:`<svg viewBox="0 0 240 160" xmlns="http://www.w3.org/2000/svg">
-      <line x1="15" y1="133" x2="225" y2="133" stroke="${B}" stroke-width="2.5"/>
-      <rect x="80" y="105" width="100" height="15" rx="6" fill="${C}" opacity=".5"/>
-      <circle cx="192" cy="110" r="13" fill="${C}" opacity=".65"/>
-      <!-- animated arm (left extends up-back) -->
-      <g class="an-da">
-        <line x1="95" y1="108" x2="70" y2="82" stroke="${G}" stroke-width="8" stroke-linecap="round" opacity=".85"/>
-        <circle cx="68" cy="80" r="6" fill="${G}" opacity=".6"/>
-      </g>
-      <!-- static arm right (bent up) -->
-      <line x1="162" y1="108" x2="174" y2="88" stroke="${C}" stroke-width="7" stroke-linecap="round" opacity=".5"/>
-      <!-- static bent knee right -->
-      <path d="M160 118 L175 133 L188 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".5"/>
-      <!-- animated leg left -->
-      <g class="an-dl">
-        <path d="M82 118 L60 133 L44 128" stroke="${G}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".85"/>
-      </g>
-      <text x="120" y="55" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Рука ↔ протилежна нога</text>
-      <text x="120" y="69" text-anchor="middle" font-size="10" fill="${T3}">Поперек притиснутий до підлоги!</text>
-    </svg>`,
-
-    glute:`<svg viewBox="0 0 220 160" xmlns="http://www.w3.org/2000/svg">
-      <line x1="15" y1="133" x2="205" y2="133" stroke="${B}" stroke-width="2.5"/>
-      <rect x="68" y="103" width="108" height="15" rx="6" fill="${C}" opacity=".5"/>
-      <circle cx="188" cy="108" r="14" fill="${C}" opacity=".65"/>
-      <!-- static bent knee left -->
-      <path d="M78 116 L63 133 L48 128" stroke="${C}" stroke-width="7.5" stroke-linecap="round" fill="none" opacity=".5"/>
-      <!-- figure-4: animated leg crossing over -->
-      <g class="an-g">
-        <path d="M105 112 L118 97 L128 103" stroke="${G}" stroke-width="8" stroke-linecap="round" fill="none" opacity=".85"/>
-        <path d="M118 97 L105 108" stroke="${G}" stroke-width="6" stroke-linecap="round" fill="none" opacity=".65"/>
-        <text x="120" y="90" text-anchor="middle" font-size="11">4</text>
-      </g>
-      <circle cx="90" cy="100" r="5.5" fill="${C}" opacity=".5"/>
-      <text x="60" y="60" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Фігура 4</text>
-      <text x="60" y="74" text-anchor="middle" font-size="10" fill="${T3}">Утримуй 30 сек</text>
-      <text x="60" y="46" text-anchor="middle" font-size="18">🍑</text>
-    </svg>`,
-
-    march:`<svg viewBox="0 0 220 175" xmlns="http://www.w3.org/2000/svg">
-      <line x1="20" y1="158" x2="200" y2="158" stroke="${B}" stroke-width="2.5"/>
-      <!-- support wall/chair -->
-      <line x1="178" y1="85" x2="178" y2="158" stroke="${B}" stroke-width="3.5"/>
-      <line x1="170" y1="105" x2="178" y2="105" stroke="${B}" stroke-width="3.5"/>
-      <!-- body -->
-      <line x1="110" y1="52" x2="110" y2="118" stroke="${C}" stroke-width="9" stroke-linecap="round" opacity=".6"/>
-      <!-- head -->
-      <circle cx="110" cy="36" r="16" fill="${C}" opacity=".68"/>
-      <!-- arms -->
-      <line x1="110" y1="75" x2="87" y2="100" stroke="${C}" stroke-width="7" stroke-linecap="round" opacity=".5"/>
-      <line x1="110" y1="75" x2="165" y2="98" stroke="${C}" stroke-width="7" stroke-linecap="round" opacity=".5"/>
-      <!-- left leg static -->
-      <g class="an-m1">
-        <line x1="110" y1="118" x2="96" y2="158" stroke="${C}" stroke-width="8" stroke-linecap="round" opacity=".5"/>
-      </g>
-      <!-- right leg animated (marching) -->
-      <g class="an-m2">
-        <line x1="110" y1="118" x2="124" y2="158" stroke="${G}" stroke-width="8" stroke-linecap="round" opacity=".9"/>
-      </g>
-      <text x="110" y="16" text-anchor="middle" font-size="11" fill="${G}" font-weight="700">Повільний марш</text>
-    </svg>`,
-  };
-  return s[t] || s.breath;
+function updateTrophies(amount) {
+    trophies += amount;
+    if (trophies < 0) trophies = 0;
+    localStorage.setItem('brawl_trophies', trophies);
+    document.getElementById('menuTrophies').innerText = trophies;
 }
 
-// ════════════════════════════
-// STATE
-// ════════════════════════════
-let ST = {
-  theme:'auto', sound:true, notif:false,
-  morT:'09:00', eveT:'19:00',
-  days:[], sessions:0, status:{}, lastW:null
+const ui = {
+    menu: document.getElementById('mainMenu'),
+    hud: document.getElementById('hud'),
+    endScreen: document.getElementById('endScreen'),
+    aliveCount: document.getElementById('aliveCount'),
+    superHint: document.getElementById('superHint')
 };
 
-function ld() {
-  try { const d=localStorage.getItem('sr2'); if(d) ST={...ST,...JSON.parse(d)}; } catch(e){}
-}
-function sv() {
-  try { localStorage.setItem('sr2', JSON.stringify(ST)); } catch(e){}
-}
+// ==========================================
+// ДВИЖОК ТА ІНПУТ
+// ==========================================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let width, height;
 
-// ════════════════════════════
-// UTILS
-// ════════════════════════════
-function ds(date){
-  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 }
-function today(){ return ds(new Date()); }
+window.addEventListener('resize', resize);
+resize();
 
-function streak(){
-  if(!ST.days.length) return 0;
-  const s=[...ST.days].sort().reverse();
-  const t=today(), y=ds(new Date(Date.now()-86400000));
-  if(s[0]!==t && s[0]!==y) return 0;
-  let n=0; let c=new Date(s[0]==='dummy'?Date.now()-86400000:s[0]==='_'?Date.now()-86400000:(s[0]===t?Date.now():Date.now()-86400000));
-  // recompute
-  let check = s[0] === t ? new Date() : new Date(Date.now()-86400000);
-  for(let i=0;i<s.length;i++){
-    if(s[i]===ds(check)){n++;check=new Date(check.getTime()-86400000);}
-    else break;
-  }
-  return n;
-}
+const keys = { KeyW: false, KeyA: false, KeyS: false, KeyD: false, ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false, Space: false };
+const mouse = { x: 0, y: 0, leftDown: false, rightDown: false };
 
-function monthSess(){
-  const p=today().slice(0,7);
-  return ST.days.filter(d=>d.startsWith(p)).length;
-}
+window.addEventListener('keydown', (e) => { 
+    if(keys.hasOwnProperty(e.code)) keys[e.code] = true; 
+});
+window.addEventListener('keyup', (e) => { 
+    if(keys.hasOwnProperty(e.code)) keys[e.code] = false; 
+});
+window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+window.addEventListener('mousedown', (e) => { 
+    if(e.button === 0) mouse.leftDown = true; 
+    if(e.button === 2) mouse.rightDown = true;
+});
+window.addEventListener('mouseup', (e) => { 
+    if(e.button === 0) mouse.leftDown = false; 
+    if(e.button === 2) mouse.rightDown = false;
+});
+// Вимикаємо контекстне меню для ульти на ПКМ
+window.addEventListener('contextmenu', e => e.preventDefault());
 
-// ════════════════════════════
-// THEME
-// ════════════════════════════
-function applyTheme(){
-  const root=document.documentElement;
-  const dark = ST.theme==='dark' || (ST.theme==='auto' && window.matchMedia('(prefers-color-scheme:dark)').matches);
-  dark ? root.setAttribute('data-theme','dark') : root.removeAttribute('data-theme');
-  const el=document.getElementById('th-v');
-  if(el) el.textContent=ST.theme==='auto'?'Авто':ST.theme==='dark'?'Темна':'Світла';
-}
-function cycleTheme(){
-  const arr=['auto','light','dark'];
-  ST.theme=arr[(arr.indexOf(ST.theme)+1)%3];
-  sv(); applyTheme();
-}
-window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(ST.theme==='auto')applyTheme();});
+window.addEventListener('blur', () => {
+    for (let k in keys) keys[k] = false;
+    mouse.leftDown = false; mouse.rightDown = false;
+});
 
-// ════════════════════════════
-// NAVIGATION
-// ════════════════════════════
-let curScr='home';
-function navigate(s){
-  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));
-  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('on'));
-  document.getElementById('s-'+s).classList.add('on');
-  document.getElementById('n-'+s).classList.add('on');
-  curScr=s;
-  if(s==='home') renderHome();
-  if(s==='exercises') renderEx();
-  if(s==='progress') renderProg();
-  if(s==='settings') renderSet();
-}
+// ==========================================
+// СТАТИСТИКА БІЙЦІВ
+// ==========================================
+const BRAWLER_STATS = {
+    'Шеллі': {
+        color: '#9C27B0', hp: 3600, speed: 320, range: 600, reload: 1.5, damage: 300, 
+        type: 'spread', ammo: 3, superChargeRate: 20
+    },
+    'Кольт': {
+        color: '#2196F3', hp: 2800, speed: 300, range: 850, reload: 1.6, damage: 320, 
+        type: 'burst', ammo: 3, superChargeRate: 15
+    },
+    'Булл': {
+        color: '#424242', hp: 5000, speed: 350, range: 350, reload: 1.6, damage: 400, 
+        type: 'tank', ammo: 3, superChargeRate: 25
+    }
+};
 
-// ════════════════════════════
-// HOME
-// ════════════════════════════
-function renderHome(){
-  const now=new Date();
-  const h=now.getHours();
-  const gr=h<5?'Доброї ночі! 🌙':h<12?'Доброго ранку! ☀️':h<17?'Добрий день! 🌤️':'Добрий вечір! 🌙';
-  document.getElementById('h-greet').textContent=gr;
-  const mn=['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
-  const dn=['Нд','Пн','Вт','Ср','Чт','Пт','Сб'];
-  document.getElementById('h-date').textContent=`${dn[now.getDay()]}, ${now.getDate()} ${mn[now.getMonth()]}`;
-  document.getElementById('h-streak').textContent=streak();
-  document.getElementById('h-total').textContent=ST.sessions;
-  // restore status
-  const v=ST.status[today()];
-  if(v) setStatus(v,true);
-  // preview 3 exercises
-  const c=document.getElementById('h-exl');
-  c.innerHTML=EX.slice(0,3).map(exHTML).join('');
-}
+// ==========================================
+// СТАН ГРИ
+// ==========================================
+let gameActive = false;
+let lastTime = 0;
+const mapSize = { width: 4000, height: 4000 };
+let stormRadius = 3000;
 
-function setStatus(v, silent=false){
-  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('sel'));
-  const btn=document.querySelector(`.sc-btn[data-v="${v}"]`);
-  if(btn) btn.classList.add('sel');
-  if(!silent){ ST.status[today()]=v; sv(); }
-  const rec=document.getElementById('h-rec');
-  rec.style.display='block';
-  if(v<=2){
-    rec.innerHTML='💚 Чудово! Спина почувається добре. Можна виконати повне тренування.';
-    rec.style.background='var(--gbg)'; rec.style.color='var(--green)';
-  } else if(v===3){
-    rec.innerHTML='💛 Помірний стан. Виконуй вправи обережно, мінімальна амплітуда. Прислухайся до тіла.';
-    rec.style.background='var(--obg)'; rec.style.color='var(--orange)';
-  } else {
-    rec.innerHTML='❤️ Напруга висока. Рекомендуємо лише дихальні вправи. Якщо є гострий біль — відпочинь.';
-    rec.style.background='var(--rbg)'; rec.style.color='var(--red)';
-  }
-}
+let player;
+let brawlers = [];
+let projectiles = [];
+let crates = [];
+let powerCubes = [];
+let particles = [];
 
-// ════════════════════════════
-// EXERCISES
-// ════════════════════════════
-let curFlt='all';
-function exHTML(ex){
-  return `<div class="ex" onclick="openEx('${ex.id}')">
-    <div class="ex-th">${ex.emoji}</div>
-    <div class="ex-inf">
-      <div class="ex-nm">${ex.name}</div>
-      <div class="ex-mt">${ex.dur} сек · ${ex.sets} підходи · ${ex.catL}</div>
-    </div>
-    <div class="ex-ar">›</div>
-  </div>`;
-}
-function renderEx(){
-  const list=document.getElementById('ex-list');
-  if(!list)return;
-  const f=curFlt==='all'?EX:EX.filter(e=>e.cat===curFlt);
-  list.innerHTML=f.map(exHTML).join('');
-}
-function flt(f,el){
-  curFlt=f;
-  document.querySelectorAll('#ex-tags .tag').forEach(t=>t.classList.remove('on'));
-  el.classList.add('on');
-  renderEx();
-}
-
-// ════════════════════════════
-// EXERCISE DETAIL
-// ════════════════════════════
-let curEx=null, ovTI=null, ovRunning=false, ovLeft=0, ovTot=0, ovSet=1;
-
-function openEx(id){
-  curEx=EX.find(e=>e.id===id);
-  if(!curEx)return;
-  document.getElementById('ov-t').textContent=curEx.name;
-  document.getElementById('ov-tg').textContent=curEx.diff;
-  document.getElementById('ov-b').innerHTML=buildOvHTML(curEx);
-  ovSet=1; ovLeft=curEx.dur; ovTot=curEx.dur; ovRunning=false;
-  if(ovTI)clearInterval(ovTI);
-  updateOvRing(); renderOvSets();
-  document.getElementById('ex-ov').classList.add('open');
-}
-
-function buildOvHTML(ex){
-  const circ=2*Math.PI*52;
-  return `
-  <div class="svg-stage fade-in">${getSvg(ex.svg)}</div>
-  <div class="timer-sec">
-    <div style="font-size:14px;color:var(--text2);text-align:center;padding:0 8px;line-height:1.5;">${ex.desc}</div>
-    <div class="ring-wrap">
-      <svg class="t-ring" width="124" height="124" viewBox="0 0 124 124">
-        <circle class="t-bg" cx="62" cy="62" r="52"/>
-        <circle class="t-prog" id="ov-ring" cx="62" cy="62" r="52"
-          stroke-dasharray="${circ}" stroke-dashoffset="0"/>
-      </svg>
-      <div class="t-text">
-        <div class="t-num" id="ov-tn">${ex.dur}</div>
-        <div class="t-lbl" id="ov-tl">сек</div>
-      </div>
-    </div>
-    <div class="sets-row" id="ov-sets"></div>
-    <div class="t-ctrl">
-      <button class="btn btn-g" id="ov-sb" onclick="ovToggle()">▶&nbsp;Старт</button>
-      <button class="btn btn-n" onclick="ovNext()">Далі ›</button>
-    </div>
-  </div>
-  <div class="instr-sec">
-    <div class="instr-blk">
-      <div class="instr-t">✅ Як виконувати</div>
-      <div class="instr-l">${ex.do.map(d=>`<div class="ii do"><span class="dot"></span>${d}</div>`).join('')}</div>
-    </div>
-    <div class="instr-blk">
-      <div class="instr-t">🚫 Чого НЕ робити</div>
-      <div class="instr-l">${ex.dont.map(d=>`<div class="ii dont"><span class="dot"></span>${d}</div>`).join('')}</div>
-    </div>
-    <div style="height:16px;"></div>
-  </div>`;
-}
-
-function renderOvSets(){
-  const r=document.getElementById('ov-sets');
-  if(!r)return;
-  r.innerHTML=Array.from({length:curEx.sets},(_,i)=>
-    `<div class="sd ${i+1<ovSet?'done':i+1===ovSet?'cur':''}"></div>`).join('');
-}
-
-function updateOvRing(){
-  const n=document.getElementById('ov-tn'); if(n)n.textContent=ovLeft;
-  const ring=document.getElementById('ov-ring');
-  if(ring){ const c=2*Math.PI*52; ring.style.strokeDashoffset=c*(1-ovLeft/ovTot); }
-}
-
-function ovToggle(){
-  const btn=document.getElementById('ov-sb');
-  if(ovRunning){ ovRunning=false; clearInterval(ovTI); if(btn)btn.innerHTML='▶&nbsp;Продовжити'; }
-  else {
-    ovRunning=true; if(btn)btn.innerHTML='⏸&nbsp;Пауза';
-    ovTI=setInterval(()=>{
-      if(ovLeft>0){ ovLeft--; updateOvRing(); if(ST.sound&&ovLeft<=3&&ovLeft>0)beep(); }
-      else{
-        clearInterval(ovTI); ovRunning=false;
-        if(ovSet<curEx.sets){ ovSet++; ovLeft=ovTot; updateOvRing(); renderOvSets(); if(btn)btn.innerHTML='▶&nbsp;Старт'; }
-        else{ if(btn){btn.innerHTML='✅ Готово';btn.classList.replace('btn-g','btn-g2');} }
-      }
-    },1000);
-  }
-}
-
-function ovNext(){
-  clearInterval(ovTI); ovRunning=false;
-  if(ovSet<curEx.sets){ ovSet++; ovLeft=ovTot; updateOvRing(); renderOvSets();
-    const btn=document.getElementById('ov-sb'); if(btn)btn.innerHTML='▶&nbsp;Старт';
-  } else closeOv();
-}
-
-function closeOv(){ clearInterval(ovTI); ovRunning=false; document.getElementById('ex-ov').classList.remove('open'); }
-
-// ════════════════════════════
-// FULL WORKOUT
-// ════════════════════════════
-let wList=[], wIdx=0, wTI=null, wRI=null, wRunning=false, wLeft=0, wTot=0, wSet=1, wStart=0;
-let _rCb=null;
-
-function startWorkout(){
-  wList=[...EX]; wIdx=0; wStart=Date.now();
-  document.getElementById('wov').classList.add('open');
-  loadWEx();
-}
-
-function loadWEx(){
-  if(wIdx>=wList.length){ finishW(); return; }
-  const ex=wList[wIdx];
-  const pct=((wIdx)/wList.length*100).toFixed(0);
-  document.getElementById('w-lbl').textContent=`Вправа ${wIdx+1} з ${wList.length}`;
-  document.getElementById('w-nm').textContent=ex.name;
-  document.getElementById('w-pf').style.width=pct+'%';
-  wSet=1; wLeft=ex.dur; wTot=ex.dur; wRunning=false;
-  if(wTI)clearInterval(wTI);
-  document.getElementById('w-bd').innerHTML=buildWHTML(ex);
-  updateWRing();
-}
-
-function buildWHTML(ex){
-  const circ=2*Math.PI*52;
-  return `
-  <div class="svg-stage">${getSvg(ex.svg)}</div>
-  <div class="timer-sec">
-    <div style="font-size:13px;color:var(--text2);text-align:center;padding:0 8px;line-height:1.5;">${ex.desc}</div>
-    <div class="ring-wrap">
-      <svg class="t-ring" width="124" height="124" viewBox="0 0 124 124">
-        <circle class="t-bg" cx="62" cy="62" r="52"/>
-        <circle class="t-prog" id="w-ring" cx="62" cy="62" r="52"
-          stroke-dasharray="${circ}" stroke-dashoffset="0"/>
-      </svg>
-      <div class="t-text">
-        <div class="t-num" id="w-tn">${ex.dur}</div>
-        <div class="t-lbl" id="w-tl">сек · підхід ${wSet}/${ex.sets}</div>
-      </div>
-    </div>
-    <div class="sets-row" id="w-sets">
-      ${Array.from({length:ex.sets},(_,i)=>`<div class="sd ${i===0?'cur':''}"></div>`).join('')}
-    </div>
-    <div class="t-ctrl">
-      <button class="btn btn-g" id="w-sb" onclick="wToggle()">▶&nbsp;Старт</button>
-      <button class="btn btn-n" onclick="wSkip()">Пропустити ›</button>
-    </div>
-    <div style="font-size:12px;color:var(--text3);text-align:center;padding:0 16px;">
-      ⚠️ Якщо з'являється біль — одразу зупини вправу
-    </div>
-  </div>
-  <div class="instr-sec">
-    <div class="instr-blk">
-      <div class="instr-t">✅ Як виконувати</div>
-      <div class="instr-l">${ex.do.slice(0,3).map(d=>`<div class="ii do"><span class="dot"></span>${d}</div>`).join('')}</div>
-    </div>
-    <div style="height:16px;"></div>
-  </div>`;
-}
-
-function updateWRing(){
-  const ex=wList[wIdx];
-  const n=document.getElementById('w-tn'); if(n)n.textContent=wLeft;
-  const l=document.getElementById('w-tl'); if(l)l.textContent=`сек · підхід ${wSet}/${ex.sets}`;
-  const ring=document.getElementById('w-ring');
-  if(ring){ const c=2*Math.PI*52; ring.style.strokeDashoffset=c*(1-wLeft/wTot); }
-  // sets dots
-  const sr=document.getElementById('w-sets');
-  if(sr) sr.innerHTML=Array.from({length:ex.sets},(_,i)=>
-    `<div class="sd ${i+1<wSet?'done':i+1===wSet?'cur':''}"></div>`).join('');
-}
-
-function wToggle(){
-  const ex=wList[wIdx], btn=document.getElementById('w-sb');
-  if(wRunning){ wRunning=false; clearInterval(wTI); if(btn)btn.innerHTML='▶&nbsp;Продовжити'; }
-  else{
-    wRunning=true; if(btn)btn.innerHTML='⏸&nbsp;Пауza';
-    // Fix: use Ukrainian
-    if(btn)btn.innerHTML='⏸&nbsp;Пауза';
-    wTI=setInterval(()=>{
-      if(wLeft>0){ wLeft--; updateWRing(); if(ST.sound&&wLeft<=3&&wLeft>0)beep(); }
-      else{
-        clearInterval(wTI); wRunning=false;
-        if(wSet<ex.sets){
-          wSet++; showRest(ex.rest,()=>{ wLeft=wTot; updateWRing(); if(btn)btn.innerHTML='▶&nbsp;Старт'; });
-        } else {
-          wIdx++;
-          if(wIdx<wList.length) showRest(wList[wIdx-1].rest, loadWEx);
-          else finishW();
+const camera = {
+    x: 0, y: 0, shakeTime: 0, shakePower: 0,
+    update(targetX, targetY, dt) {
+        this.x += (targetX - width / 2 - this.x) * 0.1;
+        this.y += (targetY - height / 2 - this.y) * 0.1;
+        if(mapSize.width > width) this.x = Math.max(0, Math.min(this.x, mapSize.width - width));
+        if(mapSize.height > height) this.y = Math.max(0, Math.min(this.y, mapSize.height - height));
+        
+        if (this.shakeTime > 0) {
+            this.x += (Math.random() - 0.5) * this.shakePower;
+            this.y += (Math.random() - 0.5) * this.shakePower;
+            this.shakeTime -= dt;
         }
-      }
-    },1000);
-  }
+    },
+    shake(time, power) { this.shakeTime = time; this.shakePower = power; }
+};
+
+// ==========================================
+// КЛАСИ
+// ==========================================
+
+class GameObject {
+    constructor(x, y, radius) {
+        this.x = x; this.y = y; this.radius = radius; this.isDead = false;
+    }
 }
 
-function wSkip(){
-  clearInterval(wTI); wRunning=false;
-  const ex=wList[wIdx], btn=document.getElementById('w-sb');
-  if(wSet<ex.sets){ wSet++; wLeft=wTot; updateWRing(); if(btn)btn.innerHTML='▶&nbsp;Старт'; }
-  else{ wIdx++; if(wIdx<wList.length)showRest(8,loadWEx); else finishW(); }
+class Brawler extends GameObject {
+    constructor(x, y, isPlayer, brawlerName, id) {
+        super(x, y, 35);
+        this.id = id;
+        this.isPlayer = isPlayer;
+        this.brawlerName = brawlerName;
+        const stats = BRAWLER_STATS[brawlerName];
+        
+        this.speed = stats.speed;
+        this.baseHp = stats.hp;
+        this.maxHp = this.baseHp;
+        this.hp = this.maxHp;
+        this.baseDamage = stats.damage;
+        this.damage = this.baseDamage;
+        this.range = stats.range;
+        this.color = stats.color;
+        
+        this.angle = 0;
+        this.cubes = 0;
+
+        // Патрони та стрільба
+        this.maxAmmo = stats.ammo;
+        this.ammo = this.maxAmmo;
+        this.reloadTime = stats.reload;
+        this.reloadTimer = 0;
+        this.attackCooldown = 0;
+        
+        // Механіка типу стрільби
+        this.attackType = stats.type;
+        this.burstQueue = 0;
+        this.burstTimer = 0;
+        this.burstAngle = 0;
+        this.isSuperBurst = false;
+
+        // Ульта (Super)
+        this.superChargeRate = stats.superChargeRate;
+        this.superCharge = 0; // 0 to 100
+        this.isDashing = false;
+        this.dashTimer = 0;
+
+        // Спавн
+        this.spawnTimer = 2.5; // Щит при спавні
+        this.spawnZ = 500; // Падіння з неба
+    }
+
+    addCube() {
+        this.cubes++;
+        this.maxHp += 400;
+        this.hp += 400;
+        this.damage += this.baseDamage * 0.1;
+    }
+
+    addSuperCharge() {
+        if (this.superCharge < 100) {
+            this.superCharge = Math.min(100, this.superCharge + this.superChargeRate);
+        }
+    }
+
+    update(dt) {
+        // Анімація спавну
+        if (this.spawnZ > 0) {
+            this.spawnZ -= 1500 * dt;
+            if (this.spawnZ < 0) this.spawnZ = 0;
+        }
+        if (this.spawnTimer > 0 && this.spawnZ <= 0) {
+            this.spawnTimer -= dt;
+        }
+
+        // Перезарядка
+        if (this.ammo < this.maxAmmo && this.burstQueue === 0) {
+            this.reloadTimer += dt;
+            if (this.reloadTimer >= this.reloadTime) {
+                this.ammo++;
+                this.reloadTimer = 0;
+            }
+        }
+        if (this.attackCooldown > 0) this.attackCooldown -= dt;
+
+        // Обробка черг (Кольт)
+        if (this.burstQueue > 0) {
+            this.burstTimer -= dt;
+            if (this.burstTimer <= 0) {
+                this.spawnProj(this.burstAngle, this.isSuperBurst ? this.damage*1.5 : this.damage, this.isSuperBurst);
+                this.burstQueue--;
+                this.burstTimer = 0.1;
+                this.x -= Math.cos(this.burstAngle) * 5; // Віддача
+                this.y -= Math.sin(this.burstAngle) * 5;
+            }
+        }
+
+        // Обробка Ривка (Булл Ульта)
+        if (this.isDashing) {
+            this.dashTimer -= dt;
+            this.x += Math.cos(this.angle) * 1200 * dt;
+            this.y += Math.sin(this.angle) * 1200 * dt;
+            createParticles(this.x, this.y, this.color, 2);
+
+            // Руйнування стін/ящиків під час ривка
+            crates.forEach(c => {
+                if (Math.hypot(this.x - c.x, this.y - c.y) < this.radius + c.radius) c.hp = 0;
+            });
+            // Шкода ворогам
+            brawlers.forEach(b => {
+                if (b !== this && b.spawnTimer <= 0 && Math.hypot(this.x - b.x, this.y - b.y) < this.radius + b.radius + 10) {
+                    b.hp -= this.damage * 2 * dt; // DOT шкода при проходженні крізь
+                }
+            });
+
+            if (this.dashTimer <= 0) this.isDashing = false;
+        }
+
+        // Шкода від зони
+        if (this.spawnTimer <= 0) {
+            let distToCenter = Math.hypot(this.x - mapSize.width/2, this.y - mapSize.height/2);
+            if (distToCenter > stormRadius) {
+                this.hp -= 1000 * dt; // Отрута б'є сильніше
+            }
+        }
+    }
+
+    tryAttack(targetX, targetY, isSuper) {
+        if (this.spawnZ > 0 || this.isDashing) return;
+        
+        if (isSuper) {
+            if (this.superCharge >= 100) {
+                this.superCharge = 0;
+                this.executeAttack(targetX, targetY, true);
+            }
+        } else {
+            if (this.ammo >= 1 && this.attackCooldown <= 0 && this.burstQueue === 0) {
+                this.ammo--;
+                this.attackCooldown = 0.3;
+                // Зняття щита при атаці
+                this.spawnTimer = 0; 
+                this.executeAttack(targetX, targetY, false);
+            }
+        }
+    }
+
+    executeAttack(targetX, targetY, isSuper) {
+        const dx = targetX - this.x;
+        const dy = targetY - this.y;
+        this.angle = Math.atan2(dy, dx);
+
+        if (this.brawlerName === 'Шеллі') {
+            let pellets = isSuper ? 5 : 3;
+            let spread = isSuper ? 0.6 : 0.3;
+            let dmg = isSuper ? this.damage * 1.5 : this.damage;
+            if(isSuper && this.isPlayer) camera.shake(0.2, 10);
+
+            for(let i=0; i<pellets; i++) {
+                let pAngle = this.angle - spread/2 + (spread/(pellets-1)) * i;
+                this.spawnProj(pAngle, dmg, isSuper);
+            }
+            this.x -= Math.cos(this.angle) * (isSuper ? 25 : 10);
+        } 
+        else if (this.brawlerName === 'Кольт') {
+            this.burstQueue = isSuper ? 6 : 3;
+            this.burstAngle = this.angle;
+            this.isSuperBurst = isSuper;
+            this.burstTimer = 0;
+        }
+        else if (this.brawlerName === 'Булл') {
+            if (isSuper) {
+                this.isDashing = true;
+                this.dashTimer = 0.8;
+                if(this.isPlayer) camera.shake(0.8, 5);
+            } else {
+                let pellets = 5;
+                let spread = 0.5;
+                for(let i=0; i<pellets; i++) {
+                    let pAngle = this.angle - spread/2 + (spread/(pellets-1)) * i;
+                    this.spawnProj(pAngle, this.damage, false);
+                }
+                this.x -= Math.cos(this.angle) * 15;
+            }
+        }
+    }
+
+    spawnProj(angle, dmg, isSuper) {
+        let size = (this.brawlerName === 'Кольт' ? 10 : 8);
+        if (isSuper) size *= 1.5;
+        let range = this.range;
+        if(isSuper && this.brawlerName === 'Шеллі') range *= 1.3;
+        
+        projectiles.push(new Projectile(this.x, this.y, angle, this, dmg, range, size, isSuper));
+    }
+
+    draw(ctx) {
+        ctx.save();
+        
+        // Масштабування для падіння
+        let scale = 1 + (this.spawnZ / 500);
+        ctx.translate(this.x, this.y - this.spawnZ);
+        ctx.scale(scale, scale);
+
+        // Тінь
+        if (this.spawnZ <= 0) {
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath(); ctx.ellipse(0, this.radius + 5, this.radius, this.radius * 0.5, 0, 0, Math.PI*2); ctx.fill();
+        }
+
+        ctx.rotate(this.angle);
+
+        // Зброя
+        ctx.fillStyle = '#333'; ctx.strokeStyle = '#111'; ctx.lineWidth = 4;
+        if (this.brawlerName === 'Шеллі') {
+            ctx.beginPath(); ctx.roundRect(15, -8, 45, 16, 4); ctx.fill(); ctx.stroke();
+        } else if (this.brawlerName === 'Кольт') {
+            ctx.beginPath(); ctx.roundRect(10, -18, 30, 10, 3); ctx.roundRect(10, 8, 30, 10, 3); ctx.fill(); ctx.stroke();
+        } else { // Булл
+            ctx.beginPath(); ctx.roundRect(10, -12, 40, 24, 6); ctx.fill(); ctx.stroke();
+        }
+
+        // Тіло
+        ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI*2);
+        ctx.fillStyle = this.color; ctx.fill(); ctx.stroke();
+
+        // Очі
+        ctx.fillStyle = '#111';
+        if (this.brawlerName === 'Булл') {
+            ctx.beginPath(); ctx.moveTo(5, -15); ctx.lineTo(15, -5); ctx.lineTo(15, 5); ctx.lineTo(5, 15); ctx.fill();
+        } else {
+            ctx.beginPath(); ctx.roundRect(5, -15, 20, 30, 8); ctx.fill();
+            ctx.fillStyle = this.isPlayer ? '#FFF' : '#FFDD00';
+            ctx.beginPath(); ctx.arc(15, -6, 4, 0, Math.PI*2); ctx.arc(15, 6, 4, 0, Math.PI*2); ctx.fill();
+        }
+
+        ctx.restore();
+
+        // Щит невразливості
+        if (this.spawnTimer > 0 && this.spawnZ <= 0) {
+            ctx.save(); ctx.translate(this.x, this.y);
+            ctx.strokeStyle = `rgba(0, 255, 255, ${Math.abs(Math.sin(Date.now()/100))})`;
+            ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.arc(0, 0, this.radius + 10, 0, Math.PI*2); ctx.stroke();
+            ctx.restore();
+        }
+
+        // UI над гравцем
+        if (this.spawnZ <= 0) this.drawUI(ctx);
+    }
+
+    drawUI(ctx) {
+        const barW = 80; const barH = 12;
+        const xOffset = this.x - barW / 2;
+        const yOffset = this.y - this.radius - 40;
+
+        // Ім'я та банки
+        ctx.fillStyle = '#FFF'; ctx.font = 'bold 14px Nunito'; ctx.textAlign = 'center';
+        ctx.fillText(this.isPlayer ? "Ти" : "Бот", this.x, yOffset - 15);
+
+        if (this.cubes > 0) {
+            ctx.fillStyle = '#66FF33'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.roundRect(this.x - barW/2 - 25, yOffset - 4, 20, 20, 4); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#000'; ctx.font = 'bold 14px Nunito'; ctx.textBaseline = 'middle';
+            ctx.fillText(this.cubes, this.x - barW/2 - 15, yOffset + 6);
+        }
+
+        // Здоров'я
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = '#000'; ctx.fillRect(xOffset - 3, yOffset - 3, barW + 6, barH + 6);
+        let hpPct = Math.max(0, this.hp / this.maxHp);
+        ctx.fillStyle = this.isPlayer ? '#4CAF50' : '#F44336';
+        ctx.fillRect(xOffset, yOffset, barW * hpPct, barH);
+        
+        ctx.fillStyle = '#FFF'; ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(`${Math.floor(this.hp)}`, this.x, yOffset + 10);
+
+        // Патрони
+        const ammoY = yOffset + barH + 4;
+        const ammoW = (barW - (this.maxAmmo-1)*2) / this.maxAmmo;
+        for(let i=0; i<this.maxAmmo; i++) {
+            ctx.fillStyle = '#000'; ctx.fillRect(xOffset + i*(ammoW+2), ammoY, ammoW, 6);
+            if (i < this.ammo) {
+                ctx.fillStyle = '#FF9800';
+                ctx.fillRect(xOffset + i*(ammoW+2) + 1, ammoY + 1, ammoW - 2, 4);
+            } else if (i === this.ammo && this.burstQueue === 0) {
+                let reloadPct = this.reloadTimer / this.reloadTime;
+                ctx.fillStyle = '#FF9800';
+                ctx.fillRect(xOffset + i*(ammoW+2) + 1, ammoY + 1, (ammoW - 2) * reloadPct, 4);
+            }
+        }
+
+        // Ульта (Кружечок біля ХП)
+        if (this.superCharge > 0) {
+            ctx.beginPath(); ctx.arc(xOffset + barW + 15, yOffset + 6, 12, 0, Math.PI*2);
+            ctx.fillStyle = '#222'; ctx.fill(); ctx.stroke();
+            
+            ctx.beginPath(); 
+            ctx.moveTo(xOffset + barW + 15, yOffset + 6);
+            ctx.arc(xOffset + barW + 15, yOffset + 6, 10, -Math.PI/2, -Math.PI/2 + (Math.PI*2 * (this.superCharge/100)));
+            ctx.fillStyle = this.superCharge >= 100 ? '#FFEB3B' : '#03A9F4';
+            ctx.fill();
+        }
+    }
 }
 
-function showRest(secs, cb){
-  const ov=document.getElementById('rest');
-  ov.classList.add('open');
-  let left=secs;
-  document.getElementById('r-tm').textContent=left;
-  _rCb=cb;
-  wRI=setInterval(()=>{
-    left--;
-    document.getElementById('r-tm').textContent=Math.max(0,left);
-    if(left<=0){ clearInterval(wRI); ov.classList.remove('open'); if(_rCb){const f=_rCb;_rCb=null;f();} }
-  },1000);
+class Projectile extends GameObject {
+    constructor(x, y, angle, owner, damage, maxDist, size, isSuper) {
+        super(x, y, size);
+        this.angle = angle;
+        this.speed = owner.brawlerName === 'Кольт' ? 1800 : 1400;
+        this.owner = owner;
+        this.damage = damage;
+        this.maxDistance = maxDist;
+        this.distance = 0;
+        this.isSuper = isSuper;
+        this.hitList = []; // Для пробивних ульт
+        
+        this.x += Math.cos(angle) * 45;
+        this.y += Math.sin(angle) * 45;
+    }
+
+    update(dt) {
+        let dx = Math.cos(this.angle) * this.speed * dt;
+        let dy = Math.sin(this.angle) * this.speed * dt;
+        this.x += dx; this.y += dy;
+        this.distance += Math.sqrt(dx*dx + dy*dy);
+        if (this.distance > this.maxDistance) this.isDead = true;
+    }
+
+    draw(ctx) {
+        ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.angle);
+        ctx.fillStyle = this.isSuper ? '#FFEB3B' : (this.owner.isPlayer ? '#00FFFF' : '#FF5555');
+        ctx.shadowBlur = 10; ctx.shadowColor = ctx.fillStyle;
+        
+        if (this.owner.brawlerName === 'Шеллі' || this.owner.brawlerName === 'Булл') {
+            ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI*2); ctx.fill();
+        } else {
+            ctx.beginPath(); ctx.roundRect(-this.radius, -this.radius/2, this.radius*2, this.radius, 4); ctx.fill();
+        }
+        ctx.restore();
+    }
 }
 
-function skipRest(){
-  clearInterval(wRI);
-  document.getElementById('rest').classList.remove('open');
-  if(_rCb){const f=_rCb;_rCb=null;f();}
+class Crate extends GameObject {
+    constructor(x, y) {
+        super(x, y, 40);
+        this.hp = 4000; this.maxHp = 4000;
+    }
+    
+    draw(ctx) {
+        ctx.save(); ctx.translate(this.x, this.y);
+        ctx.fillStyle = '#8B4513'; ctx.fillRect(-35, -35, 70, 70);
+        ctx.fillStyle = '#A0522D'; ctx.fillRect(-30, -30, 60, 60);
+        
+        ctx.strokeStyle = '#6B3410'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(-30, -30); ctx.lineTo(30, 30); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(30, -30); ctx.lineTo(-30, 30); ctx.stroke();
+
+        if (this.hp < this.maxHp) {
+            ctx.fillStyle = '#000'; ctx.fillRect(-30, -50, 60, 8);
+            ctx.fillStyle = '#FFF'; ctx.fillRect(-28, -48, 56 * (this.hp/this.maxHp), 4);
+        }
+        ctx.restore();
+    }
 }
 
-function closeW(){
-  clearInterval(wTI); clearInterval(wRI); wRunning=false;
-  document.getElementById('wov').classList.remove('open');
-  document.getElementById('rest').classList.remove('open');
+class PowerCube extends GameObject {
+    constructor(x, y) {
+        super(x, y, 12); // Менший радіус
+        this.floatOffset = 0;
+    }
+    update(dt) { this.floatOffset += dt * 5; }
+    draw(ctx) {
+        let yOffset = Math.sin(this.floatOffset) * 5;
+        ctx.save(); ctx.translate(this.x, this.y + yOffset);
+        
+        ctx.shadowBlur = 10; ctx.shadowColor = '#66FF33';
+        ctx.fillStyle = '#66FF33'; ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-12, -12, 24, 24, 4); ctx.fill(); ctx.stroke();
+        
+        ctx.shadowBlur = 0; ctx.fillStyle = '#FFF';
+        ctx.fillRect(-2, -6, 4, 12); ctx.fillRect(-6, -2, 12, 4);
+        ctx.restore();
+    }
 }
 
-function finishW(){
-  clearInterval(wTI); clearInterval(wRI);
-  const t=today();
-  if(!ST.days.includes(t)) ST.days.push(t);
-  ST.sessions++; ST.lastW=t; sv();
-  const el=Math.round((Date.now()-wStart)/60000);
-  document.getElementById('ss-t').textContent=(el||1)+' хв';
-  document.getElementById('ss-e').textContent=wList.length;
-  document.getElementById('ss-s').textContent=streak();
-  document.getElementById('succ-s').textContent=`Ти виконав ${wList.length} вправ за ${el||1} хвилин. Спина скаже дякую! 💚`;
-  document.getElementById('wov').classList.remove('open');
-  document.getElementById('succ').classList.add('open');
-  if(ST.sound)playOk();
+function createParticles(x, y, color, count) {
+    for(let i=0; i<count; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random()-0.5)*200, vy: (Math.random()-0.5)*200,
+            life: 0.5, color: color
+        });
+    }
 }
 
-function closeSucc(){
-  document.getElementById('succ').classList.remove('open');
-  navigate('home');
+// ==========================================
+// ФІЗИКА ТА ЛОГІКА
+// ==========================================
+
+function checkCollision(objA, objB) {
+    // Якщо Булл в ривку - він руйнує ящики, а не стикається
+    if (objA.isDashing && objB instanceof Crate) return;
+    if (objB.isDashing && objA instanceof Crate) return;
+
+    let dx = objA.x - objB.x;
+    let dy = objA.y - objB.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < objA.radius + objB.radius) {
+        let overlap = (objA.radius + objB.radius) - dist;
+        if(dist === 0) { objA.x += overlap; return; }
+        
+        // Маса ящиків більша (вони не рухаються)
+        if (objA instanceof Crate) {
+            objB.x -= (dx/dist) * overlap; objB.y -= (dy/dist) * overlap;
+        } else if (objB instanceof Crate) {
+            objA.x += (dx/dist) * overlap; objA.y += (dy/dist) * overlap;
+        } else {
+            objA.x += (dx/dist) * (overlap/2); objA.y += (dy/dist) * (overlap/2);
+            objB.x -= (dx/dist) * (overlap/2); objB.y -= (dy/dist) * (overlap/2);
+        }
+    }
 }
 
-// ════════════════════════════
-// PROGRESS
-// ════════════════════════════
-let calM=new Date().getMonth(), calY=new Date().getFullYear();
+// ==========================================
+// ГОЛОВНИЙ ЦИКЛ ГРИ
+// ==========================================
 
-function renderProg(){
-  document.getElementById('p-str').textContent=streak();
-  document.getElementById('p-tot').textContent=ST.sessions;
-  document.getElementById('p-mon').textContent=monthSess();
-  const ld=Math.min(ST.days.length,30);
-  const bar=document.getElementById('lv-bar');
-  if(bar)bar.style.width=(ld/30*100).toFixed(0)+'%';
-  const lv=document.getElementById('lv-days');
-  if(lv)lv.textContent=`${ld} / 30 дн.`;
-  renderCal();
+function initMatch() {
+    brawlers = []; projectiles = []; crates = []; powerCubes = []; particles = [];
+    stormRadius = mapSize.width * 0.7;
+
+    const brawlerNames = ['Шеллі', 'Кольт', 'Булл'];
+
+    // Спавн Гравця
+    player = new Brawler(Math.random() * (mapSize.width-400)+200, Math.random() * (mapSize.height-400)+200, true, selectedBrawler, 0);
+    brawlers.push(player);
+
+    // Спавн 9 Ботів
+    for(let i=1; i<=9; i++) {
+        let randBrawler = brawlerNames[Math.floor(Math.random() * brawlerNames.length)];
+        brawlers.push(new Brawler(Math.random() * (mapSize.width-400)+200, Math.random() * (mapSize.height-400)+200, false, randBrawler, i));
+    }
+
+    // Спавн Ящиків
+    for(let i=0; i<45; i++) {
+        crates.push(new Crate(Math.random() * (mapSize.width-300)+150, Math.random() * (mapSize.height-300)+150));
+    }
+
+    gameActive = true;
+    ui.menu.classList.add('hidden');
+    ui.endScreen.classList.add('hidden');
+    ui.hud.classList.remove('hidden');
+    
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
 }
 
-function renderCal(){
-  const mn=['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
-  document.getElementById('cal-t').textContent=`${mn[calM]} ${calY}`;
-  const td=today();
-  const first=new Date(calY,calM,1);
-  let sd=first.getDay()-1; if(sd<0)sd=6;
-  const dim=new Date(calY,calM+1,0).getDate();
-  let h='';
-  for(let i=0;i<sd;i++)h+='<div class="cc empty"></div>';
-  for(let d=1;d<=dim;d++){
-    const dstr=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const done=ST.days.includes(dstr), isTd=dstr===td;
-    h+=`<div class="cc${done?' done':''}${isTd?' today':''}">${done?'✓':d}</div>`;
-  }
-  document.getElementById('cal-g').innerHTML=h;
+function finishMatch() {
+    gameActive = false;
+    let place = brawlers.length; 
+    if (player.hp > 0) place = 1;
+
+    const trophyChanges = [10, 8, 6, 4, 2, 0, -1, -2, -3, -5];
+    let earned = trophyChanges[place - 1] || 0;
+    
+    updateTrophies(earned);
+
+    ui.hud.classList.add('hidden');
+    ui.endScreen.classList.remove('hidden');
+    document.getElementById('endPlace').innerText = `Місце: ${place}`;
+    document.getElementById('endPlace').className = place <= 4 ? 'end-place win-text' : 'end-place lose-text';
+    document.getElementById('endTrophies').innerText = earned >= 0 ? `+${earned} 🏆` : `${earned} 🏆`;
+    document.getElementById('endTrophies').style.color = earned >= 0 ? '#66FF33' : '#FF6666';
 }
 
-function calPrev(){ calM--; if(calM<0){calM=11;calY--;} renderCal(); }
-function calNext(){ calM++; if(calM>11){calM=0;calY++;} renderCal(); }
+function update(dt) {
+    if(!gameActive) return;
 
-// ════════════════════════════
-// SETTINGS
-// ════════════════════════════
-function renderSet(){
-  const st=document.getElementById('snd-tgl');
-  const nt=document.getElementById('ntf-tgl');
-  if(st)st.classList.toggle('on',ST.sound);
-  if(nt)nt.classList.toggle('on',ST.notif);
-  const m=document.getElementById('t-mor'), e=document.getElementById('t-eve');
-  if(m)m.value=ST.morT; if(e)e.value=ST.eveT;
-  applyTheme();
+    stormRadius -= 15 * dt; 
+
+    // --- РУХ ГРАВЦЯ ---
+    if (player.hp > 0 && !player.isDashing && player.spawnZ <= 0) {
+        let dx = 0, dy = 0;
+        if (keys.KeyW || keys.ArrowUp) dy -= 1;
+        if (keys.KeyS || keys.ArrowDown) dy += 1;
+        if (keys.KeyA || keys.ArrowLeft) dx -= 1;
+        if (keys.KeyD || keys.ArrowRight) dx += 1;
+
+        if (dx !== 0 || dy !== 0) {
+            let len = Math.sqrt(dx*dx + dy*dy);
+            player.x += (dx/len) * player.speed * dt;
+            player.y += (dy/len) * player.speed * dt;
+        }
+
+        let mwX = mouse.x + camera.x;
+        let mwY = mouse.y + camera.y;
+        
+        // Звичайна атака
+        if (mouse.leftDown) player.tryAttack(mwX, mwY, false);
+        // Ульта
+        if (mouse.rightDown || keys.Space) player.tryAttack(mwX, mwY, true);
+    }
+
+    // UI Ульти
+    if(player.superCharge >= 100) ui.superHint.style.display = 'block';
+    else ui.superHint.style.display = 'none';
+
+    // --- БОТИ (AI) ---
+    brawlers.forEach(b => {
+        b.update(dt);
+        if (b.isPlayer || b.spawnZ > 0) return;
+
+        let target = null; let minDist = Infinity;
+        let possibleTargets = [...brawlers.filter(ob => ob !== b && ob.spawnTimer <= 0), ...crates];
+        
+        possibleTargets.forEach(t => {
+            let dist = Math.hypot(t.x - b.x, t.y - b.y);
+            if (dist < minDist) { minDist = dist; target = t; }
+        });
+
+        if (target && !b.isDashing) {
+            let angleToTarget = Math.atan2(target.y - b.y, target.x - b.x);
+            // Плавний поворот (спрощено)
+            b.angle = angleToTarget; 
+            
+            let optimalDist = b.range * 0.7; // Триматись на 70% дистанції атаки
+            if (minDist > optimalDist) {
+                b.x += Math.cos(b.angle) * b.speed * dt;
+                b.y += Math.sin(b.angle) * b.speed * dt;
+            } else if (minDist < optimalDist - 100) {
+                // Відступ
+                b.x -= Math.cos(b.angle) * b.speed * dt;
+                b.y -= Math.sin(b.angle) * b.speed * dt;
+            }
+
+            // Атака
+            if (minDist <= b.range) {
+                if (b.superCharge >= 100 && minDist < b.range * 0.8) {
+                    b.tryAttack(target.x, target.y, true);
+                } else {
+                    b.tryAttack(target.x, target.y, false);
+                }
+            }
+        }
+
+        // Втеча від зони
+        let distToCenter = Math.hypot(b.x - mapSize.width/2, b.y - mapSize.height/2);
+        if (distToCenter > Math.max(0, stormRadius - 300)) {
+            let angleToCenter = Math.atan2(mapSize.height/2 - b.y, mapSize.width/2 - b.x);
+            b.x += Math.cos(angleToCenter) * b.speed * dt;
+            b.y += Math.sin(angleToCenter) * b.speed * dt;
+        }
+    });
+
+    // --- СНАРЯДИ ---
+    for(let i = projectiles.length-1; i>=0; i--) {
+        let p = projectiles[i];
+        p.update(dt);
+        if(p.isDead) continue;
+
+        let hitSomething = false;
+
+        // Влучання в бійців
+        brawlers.forEach(b => {
+            if (p.owner !== b && !p.isDead && b.spawnTimer <= 0 && b.spawnZ <= 0) {
+                if (Math.hypot(p.x - b.x, p.y - b.y) < b.radius + p.radius) {
+                    if (!p.hitList.includes(b)) {
+                        b.hp -= p.damage;
+                        createParticles(p.x, p.y, b.color, 3);
+                        if(p.owner) p.owner.addSuperCharge();
+                        p.hitList.push(b);
+                        hitSomething = true;
+                    }
+                }
+            }
+        });
+
+        // Влучання в ящики
+        crates.forEach(c => {
+            if (!p.isDead && Math.hypot(p.x - c.x, p.y - c.y) < c.radius + p.radius) {
+                 if (!p.hitList.includes(c)) {
+                    c.hp -= p.damage;
+                    createParticles(p.x, p.y, '#8B4513', 3);
+                    if(p.owner) p.owner.addSuperCharge();
+                    p.hitList.push(c);
+                    hitSomething = true;
+                 }
+            }
+        });
+
+        // Видалити снаряд, якщо він не пробивний
+        if (hitSomething && !p.isSuper) p.isDead = true;
+    }
+
+    // --- ЗБІР БАНОК ---
+    brawlers.forEach(b => {
+        if(b.spawnZ > 0) return;
+        powerCubes.forEach(pc => {
+            if (!pc.isDead && Math.hypot(b.x - pc.x, b.y - pc.y) < b.radius + pc.radius + 10) {
+                b.addCube();
+                pc.isDead = true;
+                // Звуковий ефект або партикли
+                createParticles(pc.x, pc.y, '#66FF33', 5);
+            }
+        });
+    });
+
+    powerCubes.forEach(pc => pc.update(dt));
+    
+    // Частинки
+    for(let i=particles.length-1; i>=0; i--) {
+        let pt = particles[i];
+        pt.x += pt.vx * dt; pt.y += pt.vy * dt;
+        pt.life -= dt;
+        if(pt.life <= 0) particles.splice(i, 1);
+    }
+
+    // --- КОЛІЗІЇ ---
+    let collidables = [...brawlers.filter(b=>b.spawnZ<=0), ...crates];
+    for(let i=0; i<collidables.length; i++) {
+        for(let j=i+1; j<collidables.length; j++) {
+            checkCollision(collidables[i], collidables[j]);
+        }
+    }
+
+    // Межі карти
+    brawlers.forEach(b => {
+        b.x = Math.max(b.radius, Math.min(b.x, mapSize.width - b.radius));
+        b.y = Math.max(b.radius, Math.min(b.y, mapSize.height - b.radius));
+    });
+
+    // --- ОЧИЩЕННЯ ВБИТИХ ---
+    crates.forEach(c => {
+        if(c.hp <= 0 && !c.isDead) {
+            c.isDead = true;
+            powerCubes.push(new PowerCube(c.x, c.y));
+            createParticles(c.x, c.y, '#8B4513', 10);
+        }
+    });
+
+    brawlers.forEach(b => {
+        if(b.hp <= 0 && !b.isDead) {
+            b.isDead = true;
+            // Випадає стільки банок, скільки було / 2 + 1
+            let cubesToDrop = Math.floor(b.cubes / 2) + 1;
+            for(let i=0; i<cubesToDrop; i++) {
+                let offsetX = (Math.random()-0.5)*40;
+                let offsetY = (Math.random()-0.5)*40;
+                powerCubes.push(new PowerCube(b.x + offsetX, b.y + offsetY));
+            }
+            if(b.isPlayer) finishMatch();
+        }
+    });
+
+    projectiles = projectiles.filter(p => !p.isDead);
+    crates = crates.filter(c => !c.isDead);
+    powerCubes = powerCubes.filter(pc => !pc.isDead);
+    brawlers = brawlers.filter(b => !b.isDead);
+
+    ui.aliveCount.innerText = `Бійців: ${brawlers.length}`;
+
+    // Перемога гравця
+    if (player.hp > 0 && brawlers.length === 1 && !player.isDead) {
+        finishMatch();
+    }
+
+    if (player.hp > 0) camera.update(player.x, player.y, dt);
 }
 
-function togSound(){
-  ST.sound=!ST.sound; sv(); renderSet();
-  if(ST.sound)tick();
+// ==========================================
+// РЕНДЕР
+// ==========================================
+
+function drawBackground(ctx) {
+    ctx.fillStyle = '#A0C050'; 
+    ctx.fillRect(0, 0, mapSize.width, mapSize.height);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.05)'; ctx.lineWidth = 4;
+    for(let x=0; x<mapSize.width; x+=200) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,mapSize.height); ctx.stroke(); }
+    for(let y=0; y<mapSize.height; y+=200) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(mapSize.width,y); ctx.stroke(); }
+
+    ctx.strokeStyle = '#444'; ctx.lineWidth = 20;
+    ctx.strokeRect(0, 0, mapSize.width, mapSize.height);
 }
 
-function togNotif(){
-  if(!ST.notif){
-    if('Notification' in window){
-      Notification.requestPermission().then(p=>{
-        if(p==='granted'){ ST.notif=true; sv(); renderSet(); schedNtf(); }
-        else alert('Надайте дозвіл на сповіщення в налаштуваннях браузера.');
-      });
-    } else alert('Ваш браузер не підтримує сповіщення.');
-  } else { ST.notif=false; sv(); renderSet(); }
+function drawStorm(ctx) {
+    ctx.fillStyle = 'rgba(0, 200, 0, 0.4)';
+    ctx.beginPath();
+    ctx.rect(0, 0, mapSize.width, mapSize.height);
+    ctx.arc(mapSize.width/2, mapSize.height/2, Math.max(0, stormRadius), 0, Math.PI*2, true);
+    ctx.fill();
+
+    ctx.strokeStyle = '#00FF00'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(mapSize.width/2, mapSize.height/2, Math.max(0, stormRadius), 0, Math.PI*2); ctx.stroke();
 }
 
-function saveNtf(){
-  ST.morT=document.getElementById('t-mor').value;
-  ST.eveT=document.getElementById('t-eve').value;
-  sv(); if(ST.notif)schedNtf();
+function draw() {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    ctx.translate(-camera.x, -camera.y);
+
+    drawBackground(ctx);
+    drawStorm(ctx);
+
+    let renderables = [...crates, ...powerCubes, ...brawlers].sort((a,b) => a.y - b.y);
+    renderables.forEach(r => r.draw(ctx));
+    projectiles.forEach(p => p.draw(ctx));
+
+    // Частинки
+    particles.forEach(pt => {
+        ctx.fillStyle = pt.color;
+        ctx.globalAlpha = pt.life * 2;
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI*2); ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+
+    ctx.restore();
 }
 
-function schedNtf(){
-  sched1(ST.morT,'SpineRehab ☀️','Час ранкового тренування! Подбай про свою спину 🌿');
-  sched1(ST.eveT,'SpineRehab 🌙','Вечірнє тренування чекає! 5 хвилин для здорової спини.');
-}
-function sched1(ts,title,body){
-  const [h,m]=ts.split(':').map(Number);
-  const now=new Date(), t=new Date();
-  t.setHours(h,m,0,0); if(t<=now)t.setDate(t.getDate()+1);
-  setTimeout(()=>{
-    if(ST.notif&&Notification.permission==='granted') new Notification(title,{body});
-  },t-now);
+function gameLoop(timestamp) {
+    let dt = (timestamp - lastTime) / 1000;
+    if (dt > 0.1) dt = 0.1;
+    lastTime = timestamp;
+
+    update(dt);
+    draw();
+
+    if(gameActive) requestAnimationFrame(gameLoop);
 }
 
-function resetAll(){
-  if(confirm('Скинути весь прогрес? Це незворотно.')){
-    ST={...ST,days:[],sessions:0,status:{},lastW:null}; sv();
-    navigate('home');
-  }
-}
+// ==========================================
+// ПОДІЇ КНОПОК
+// ==========================================
+document.getElementById('startBtn').addEventListener('click', initMatch);
+document.getElementById('backToMenuBtn').addEventListener('click', () => {
+    ui.endScreen.classList.add('hidden');
+    ui.menu.classList.remove('hidden');
+});
 
-// ════════════════════════════
-// SOUND
-// ════════════════════════════
-let _ac=null;
-function ac(){ if(!_ac)try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){} return _ac; }
-function tone(f,d,v=0.1){
-  try{
-    const ctx=ac(); if(!ctx)return;
-    const o=ctx.createOscillator(), g=ctx.createGain();
-    o.connect(g); g.connect(ctx.destination);
-    o.frequency.value=f; o.type='sine';
-    g.gain.setValueAtTime(v,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);
-    o.start(ctx.currentTime); o.stop(ctx.currentTime+d);
-  }catch(e){}
-}
-function tick(){ if(ST.sound)tone(800,.05,.06); }
-function beep(){ if(ST.sound)tone(550,.18,.18); }
-function playOk(){
-  if(!ST.sound)return;
-  setTimeout(()=>tone(523,.2,.2),0);
-  setTimeout(()=>tone(659,.2,.2),220);
-  setTimeout(()=>tone(784,.4,.2),440);
-}
-
-// ════════════════════════════
-// TOUCH PROTECTION
-// ════════════════════════════
-document.addEventListener('contextmenu',e=>e.preventDefault());
-document.addEventListener('selectstart',e=>e.preventDefault());
-document.addEventListener('touchmove',e=>{
-  const ok=e.target.closest('.screen,.ov-body,.w-body,.ov');
-  if(!ok)e.preventDefault();
-},{passive:false});
-document.addEventListener('touchstart',e=>{
-  if(e.touches.length>1)e.preventDefault();
-},{passive:false});
-
-// ════════════════════════════
-// INIT
-// ════════════════════════════
-(function init(){
-  ld(); applyTheme(); navigate('home');
-  if(ST.notif)schedNtf();
-})();
 </script>
 </body>
 </html>
